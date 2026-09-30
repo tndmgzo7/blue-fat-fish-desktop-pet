@@ -1,0 +1,70 @@
+{
+  "animation": "ds_code_eureka",
+  "variants": {
+    "ds_code_eureka": "with the '有了！' speech bubble baked in",
+    "ds_code_eureka_nobubble": "identical frames without the bubble"
+  },
+  "fps": 10,
+  "frame_ms": 100,
+  "frames": 76,
+  "duration_s": 7.6,
+  "canvas": [
+    256,
+    256
+  ],
+  "baseline_y": 244,
+  "frame_files": "frames/<variant>/00.png .. 75.png (RGBA, 256x256, feet on y=244)",
+  "strips": "spritesheets/<variant>.png (76 cells of 256x256, left -> right, frame i at x = 256*i)",
+  "segments": {
+    "typing": {
+      "frames": [
+        0,
+        24
+      ],
+      "seconds": 2.5
+    },
+    "think": {
+      "frames": [
+        25,
+        39
+      ],
+      "seconds": 1.5
+    },
+    "eureka": {
+      "frames": [
+        40,
+        52
+      ],
+      "seconds": 1.3
+    },
+    "smug": {
+      "frames": [
+        53,
+        75
+      ],
+      "seconds": 2.3
+    }
+  },
+  "loop_section": {
+    "start": 56,
+    "end_exclusive": 76,
+    "frames": 20,
+    "seconds": 2.0,
+    "note": "play 0..75 once, then repeat 56..75 (smug hold) as long as needed; there is no exit part"
+  },
+  "bubble": {
+    "text": "有了！",
+    "frames": [
+      41,
+      52
+    ],
+    "box_xyxy": [
+      127,
+      3,
+      175,
+      31
+    ],
+    "note": "only in the ds_code_eureka variant; frames outside 41..52 are pixel-identical in both variants"
+  },
+  "gif": "previews/ds_code_eureka.gif (loop section shown 2x)"
+}

@@ -1,0 +1,127 @@
+{
+  "chain": "ds_tail_touch (不许摸尾巴！, 24 frames, loop_section [14, 20] = one tail slam, the app plays 2-3) -> ds_tail_allow (TAIL_ALLOW_CHANCE = 1.0: always). Both animations are in the app atlas; ds_tail_allow_baked is frames-only.",
+  "variants": {
+    "ds_tail_allow": "app animation (no text in the frames; the app draws the bubbles)",
+    "ds_tail_allow_baked": "identical frames with the three speech bubbles drawn in (frames-only)"
+  },
+  "fps": 10,
+  "frame_ms": 100,
+  "frames": 60,
+  "canvas": [
+    256,
+    256
+  ],
+  "baseline_y": 244,
+  "frame_files": "frames/<variant>/00.png .. 59.png (RGBA, 256x256, feet on y=244)",
+  "strips": "spritesheets/<variant>.png (60 cells of 256x256, left -> right, frame i at x = 256*i); spritesheets/ds_tail_touch.png = the touch before it",
+  "segments": {
+    "sulk": {
+      "frames": [
+        0,
+        12
+      ],
+      "seconds": 1.3
+    },
+    "offer_in": {
+      "frames": [
+        13,
+        15
+      ],
+      "seconds": 0.3
+    },
+    "offer_loop": {
+      "frames": [
+        16,
+        27
+      ],
+      "seconds": 1.2
+    },
+    "touched": {
+      "frames": [
+        28,
+        45
+      ],
+      "seconds": 1.8
+    },
+    "timeout": {
+      "frames": [
+        46,
+        59
+      ],
+      "seconds": 1.4
+    }
+  },
+  "loop_section": {
+    "start": 16,
+    "end_exclusive": 28,
+    "frames": 12,
+    "seconds": 1.2,
+    "note": "the offer: repeat 16..27 while waiting (the app waits TAIL_ALLOW_WAIT = 4.0 s)"
+  },
+  "branches": {
+    "touched": {
+      "frames": [
+        28,
+        45
+      ],
+      "seconds": 1.8
+    },
+    "timeout": {
+      "frames": [
+        46,
+        59
+      ],
+      "seconds": 1.4
+    }
+  },
+  "playback": "play 0..27, repeat the loop section 16..27; then EITHER a click on her -> hard cut to frame 28 and play 28..45 (touched) OR no click within ~4 s -> hard cut to frame 46 and play 46..59 (timeout). Frames 28..45 are never shown on the timeout path and vice versa. Both branches end on idle poses.",
+  "bubbles": {
+    "offer": {
+      "text": "只、只能摸一下哦",
+      "frames": [
+        16,
+        27
+      ],
+      "box_xyxy": [
+        75,
+        3,
+        183,
+        31
+      ]
+    },
+    "touched": {
+      "text": "呜…就、就一下！",
+      "frames": [
+        29,
+        42
+      ],
+      "box_xyxy": [
+        75,
+        3,
+        183,
+        31
+      ]
+    },
+    "timeout": {
+      "text": "哼，不摸拉倒",
+      "frames": [
+        47,
+        56
+      ],
+      "box_xyxy": [
+        87,
+        3,
+        171,
+        31
+      ]
+    }
+  },
+  "bubble_note": "only in ds_tail_allow_baked; frames outside those ranges are pixel-identical in both variants",
+  "gifs": {
+    "previews/ds_tail_allow.gif": "app frames: ds_tail_touch (3 slams) -> ds_tail_allow -> touched",
+    "previews/ds_tail_allow_timeout.gif": "app frames: ds_tail_allow -> timeout",
+    "previews/ds_tail_allow_baked.gif": "baked: ds_tail_touch -> ds_tail_allow_baked -> touched",
+    "previews/ds_tail_allow_baked_timeout.gif": "baked: ds_tail_allow_baked -> timeout",
+    "loops": "offer loop shown 3x"
+  }
+}

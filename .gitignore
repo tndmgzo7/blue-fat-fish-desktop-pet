@@ -1,0 +1,23 @@
+# Local environments and generated outputs
+.venv/
+.venv.*/
+**/.venv/
+**/.venv.*/
+__pycache__/
+*.py[cod]
+userdata/
+**/userdata/
+_validation/
+**/_validation/
+selftest_out/
+**/selftest_out/
+build/
+dist/
+release/
+*.zip
+*.log
+.env
+.env.*
+*.bak
+.DS_Store
+Thumbs.db
