@@ -4,6 +4,13 @@
 
 ![摸尾巴允许动画](docs/previews/tail-allow.png)
 
+## 实机截图
+
+<p>
+  <img src="docs/screenshots/desktop-1.png" alt="实机截图：开心冒爱心" width="49%">
+  <img src="docs/screenshots/desktop-2.png" alt="实机截图：扑蝴蝶" width="49%">
+</p>
+
 ## 开始使用
 
 Windows 安装 Python 3.11 或更新版本，并让 Python 可从命令行使用。解压完整目录后，双击 **启动桌宠.bat**；首次启动会自动创建环境并安装 PySide6，需要网络。

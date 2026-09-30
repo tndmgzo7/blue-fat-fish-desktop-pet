@@ -21,6 +21,13 @@ README=r'''# 蓝色大肥鱼桌宠 / Blue Fat Fish Desktop Pet
 
 ![摸尾巴允许动画](docs/previews/tail-allow.png)
 
+## 实机截图
+
+<p>
+  <img src="docs/screenshots/desktop-1.png" alt="实机截图：开心冒爱心" width="49%">
+  <img src="docs/screenshots/desktop-2.png" alt="实机截图：扑蝴蝶" width="49%">
+</p>
+
 ## 开始使用
 
 Windows 安装 Python 3.11 或更新版本，并让 Python 可从命令行使用。解压完整目录后，双击 **启动桌宠.bat**；首次启动会自动创建环境并安装 PySide6，需要网络。
@@ -180,6 +187,8 @@ def main():
         copy(candidate,'app/tests/'+name)
     preview=ROOT/'docs/previews/tail-allow.png' if REPOSITORY else APP/'_validation/preview_tail_allow.png'
     copy(preview,'docs/previews/tail-allow.png')
+    for name in ('desktop-1.png','desktop-2.png'):
+        copy(ROOT/'docs/screenshots'/name,'docs/screenshots/'+name)
     policy_path=ROOT/'docs/动画状态说明.md' if REPOSITORY else ROOT/'动画状态说明.md'
     policy=policy_path.read_text(encoding='utf-8').replace('桌宠/whale-pet/app/','app/')
     add('docs/动画状态说明.md',policy.encode('utf-8'))

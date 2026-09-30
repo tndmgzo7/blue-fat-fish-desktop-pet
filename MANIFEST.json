@@ -30,13 +30,13 @@
     },
     {
       "path": "LICENSE-ART",
-      "bytes": 1884,
-      "sha256": "9f97ae140bd1641bde5f2c2dfaa723549cf5c21f2e7513e9960dfc9810f6b274"
+      "bytes": 2027,
+      "sha256": "567590416a2f391a83e0c1453488f59ec455f0999067dcb9712095f5e0344349"
     },
     {
       "path": "README.md",
-      "bytes": 4281,
-      "sha256": "e519da09ffd308681d14a2466a49606cb7bae540fff28ee873ab06a39cdc49c5"
+      "bytes": 4490,
+      "sha256": "5804d51e17eb29103c5bb8b85e561137d1e2a6d7385cd542a27b29b0e864737e"
     },
     {
       "path": "VERSION",
@@ -839,6 +839,16 @@
       "sha256": "1c96dde50d4a0c318b346a7c13d01d965e3d532f5fbb1b8ca718131d6d9093d0"
     },
     {
+      "path": "docs/screenshots/desktop-1.png",
+      "bytes": 118741,
+      "sha256": "ef93480fdc5c6b1865a664c24f370e942d7bc2e38725385c67bb01cb5eec4290"
+    },
+    {
+      "path": "docs/screenshots/desktop-2.png",
+      "bytes": 114691,
+      "sha256": "ae40aeeee7378e80bee52b94be21fe74fbbde4e04ca89dff8360018adea64598"
+    },
+    {
       "path": "docs/动画状态说明.md",
       "bytes": 5704,
       "sha256": "a998b3fa396986c1f57dcbbff3e7cc61e7707e7c9866ae3be3841f9f018f7e1f"
@@ -850,8 +860,8 @@
     },
     {
       "path": "scripts/package_github.py",
-      "bytes": 14278,
-      "sha256": "a8245e35ef95e1b8bd6c70f8d966d68d4b2c4436864a74a905fa4f91e745cb04"
+      "bytes": 14606,
+      "sha256": "66354e10442d534d123dcbbfbe66ca846e9ca1fb429c785f63f6413435b290de"
     },
     {
       "path": "启动DSH桌宠.bat",
