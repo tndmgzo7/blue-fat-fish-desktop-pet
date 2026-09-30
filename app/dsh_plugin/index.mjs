@@ -3,6 +3,7 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { mkdir, writeFile, rename, readFile, unlink } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {CompanionChat,taskView} from './companion-chat.mjs';
 
 const defaultFile = resolve(dirname(fileURLToPath(import.meta.url)), '../userdata/dsh-bridge.json');
 
@@ -31,6 +32,15 @@ export async function createBridge(api, options = {}) {
   const lifetime = new AbortController();
   const streams = new Set();
   const sockets = new Set();
+  const registry=options.workspaceRegistry;
+  const chat=new CompanionChat(api,{llm:options.llm,agentDefaultModel:options.agentDefaultModel,
+    personaFile:options.personaFile||fileURLToPath(new URL('./persona.md',import.meta.url))});
+  const chatTurns=new Set();
+  const emotionTurns=new Set();
+  async function workspaceFor(path) {
+    if (!registry) throw new Error('dsh 未提供工作区接口，无法创建可见会话。');
+    return await registry.resolveByPath(path) || await registry.create(path);
+  }
   let closed = false;
   const server = createServer(async (request, response) => {
     const presented = String(request.headers.authorization || '');
@@ -44,17 +54,26 @@ export async function createBridge(api, options = {}) {
     lifetime.signal.addEventListener('abort', stop, {once:true});
     try {
       if (request.method === 'GET' && url.pathname === '/health') {
-        return json(response, 200, {apiVersion:1, name:'WhalePet dsh bridge', pid:process.pid});
+        return json(response, 200, {apiVersion:2, build:'2026.09.30-reactions-2', name:'蓝色大肥鱼 dsh bridge', pid:process.pid,
+          companionChat:!!options.llm, workspace:!!registry});
       }
       if (request.method === 'GET' && url.pathname === '/sessions') {
         const result = await api.list({}, cancellation.signal);
+        const workspaces=registry?.list()||[];
         const items = result.items.slice(0, 100).map(row => {
           const title = row.projections?.values?.title;
           return {sessionId:row.sessionId, updatedAt:row.updatedAt, running:row.running,
                   title:typeof title === 'string' ? title : typeof title?.text === 'string' ? title.text : '',
-                  cwd:row.cwd || '', parentSessionId:row.parentSessionId || null};
+                  cwd:row.cwd || '', parentSessionId:row.parentSessionId || null,
+                  workspaceId:workspaces.find(w=>w.sessionIds.includes(row.sessionId))?.id||null,
+                  archived:registry?.archivedSessionIds?.includes(row.sessionId)||false};
         });
         return json(response, 200, {items});
+      }
+      if (request.method==='GET' && url.pathname==='/task-view') {
+        const identity=url.searchParams.get('sessionId');
+        if (!identity||identity.length>512) throw new Error('Session required');
+        return json(response,200,taskView(await api.inspect(identity,cancellation.signal),identity));
       }
       if (request.method === 'GET' && url.pathname === '/follow') {
         const sessionId = url.searchParams.get('sessionId');
@@ -82,11 +101,42 @@ export async function createBridge(api, options = {}) {
       }
       if (request.method === 'POST') {
         const body = await bodyOf(request);
+        if (url.pathname==='/emotion') {
+          const identity=String(body.turnId||'');
+          if (typeof body.text!=='string'||!body.text.trim()||body.text.length>4000||!identity||identity.length>128) throw new Error('Emotion input required');
+          if(emotionTurns.size>=2||emotionTurns.has(identity)) return json(response,200,{emotion:'none'});
+          emotionTurns.add(identity);
+          const timeout=setTimeout(stop,10000);
+          try { return json(response,200,await chat.emotion(body.text,cancellation.signal)); }
+          finally {clearTimeout(timeout);emotionTurns.delete(identity);}
+        }
+        if (url.pathname==='/chat') {
+          if (typeof body.text!=='string'||body.text.length>32000||(!body.text.trim()&&body.event!=='report')) throw new Error('请输入聊天内容。');
+          const identity=String(body.turnId||'');
+          if (!identity||identity.length>128) throw new Error('Chat turn required');
+          if (chatTurns.size>=2||chatTurns.has(identity)) throw new Error('我还在回答这句话呢，稍等一下。');
+          chatTurns.add(identity);
+          const timeout=setTimeout(stop,45000);
+          try { return json(response,200,await chat.chat(body,cancellation.signal)); }
+          finally { clearTimeout(timeout); chatTurns.delete(identity); }
+        }
         if (url.pathname === '/session') {
           if (typeof body.cwd !== 'string' || !body.cwd.trim()) throw new Error('Working folder required');
-          return json(response, 200, await api.create({cwd:body.cwd}));
+          const workspace=await workspaceFor(body.cwd);
+          const value=await api.create({workspaceId:workspace.id});
+          let title='';
+          if (typeof body.title==='string'&&body.title.trim()&&api.rename) {
+            try { title=(await api.rename({sessionId:value.sessionId,title:body.title.trim().slice(0,100)})).title; } catch {}
+          }
+          return json(response, 200, {...value,workspaceId:workspace.id,workspaceTitle:workspace.title,title,cwd:workspace.path});
         }
         if (typeof body.sessionId !== 'string' || !body.sessionId) throw new Error('Session required');
+        if (url.pathname==='/attach') {
+          const inspected=await api.inspect(body.sessionId,cancellation.signal);
+          const workspace=await workspaceFor(inspected.meta?.cwd);
+          await workspace.attachSession(body.sessionId);
+          return json(response,200,{sessionId:body.sessionId,workspaceId:workspace.id,workspaceTitle:workspace.title,cwd:workspace.path});
+        }
         if (url.pathname === '/prompt') {
           if (typeof body.text !== 'string' || !body.text.trim() || body.text.length > 32000) throw new Error('Prompt must contain 1–32000 characters');
           if (typeof body.requestId !== 'string' || !body.requestId || body.requestId.length > 128) throw new Error('Request identity required');
@@ -140,9 +190,10 @@ export async function createBridge(api, options = {}) {
 
 export default {
   name:'whale-pet-bridge',
-  inject:['sessionController'],
+  inject:['sessionController','llm','agentDefaultModel','workspaceRegistry'],
   async apply(ctx, config = {}) {
-    const bridge = await createBridge(ctx.get('sessionController'), config);
+    const bridge = await createBridge(ctx.get('sessionController'), {...config,llm:ctx.get('llm'),
+      agentDefaultModel:ctx.get('agentDefaultModel'),workspaceRegistry:ctx.get('workspaceRegistry')});
     ctx.effect(function* () { yield () => bridge.close(); });
     ctx.logger.info('Whale Pet local bridge is ready.');
   }

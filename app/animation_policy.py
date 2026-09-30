@@ -11,12 +11,16 @@ class Rule:
     cooldown: float = 60.0
     family: str = ''
 
+IDLE_GAP = (11.0, 21.0)
+WALK_GAP = (60.0, 110.0)
+FIRST_IDLE_GAP = (7.0, 12.0)
+
 IDLE_RULES = (
-    Rule('wave',1,75), Rule('stretch',1,90), Rule('curtsy',.9,90),
-    Rule('tea',.8,90,'tea'), Rule('curious',1,75), Rule('dance',.7,120),
-    Rule('sit',.8,100), Rule('tsun_proud',.7,120), Rule('tsun_peek',.7,90),
-    Rule('idle_tea',.8,120,'tea'), Rule('idle_fishing',.55,180),
-    Rule('idle_butterfly',.7,120), Rule('ds_basin',.4,240),
+    Rule('wave',1,60), Rule('stretch',1,75), Rule('curtsy',.9,75),
+    Rule('tea',.8,75,'tea'), Rule('curious',1,60), Rule('dance',.7,100),
+    Rule('sit',.8,85), Rule('tsun_proud',.7,100), Rule('tsun_peek',.7,75),
+    Rule('idle_tea',.8,100,'tea'), Rule('idle_fishing',.55,150),
+    Rule('idle_butterfly',.7,100), Rule('ds_basin',.4,200),
 )
 WORK_POOLS = {
     'thinking': (Rule('dsh_thinking',3,0), Rule('curious',1,35)),

@@ -35,7 +35,7 @@ from PySide6.QtGui import (QPixmap, QPainter, QAction, QCursor, QGuiApplication,
 from PySide6.QtWidgets import QApplication, QWidget, QMenu, QSystemTrayIcon, QMessageBox
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from pet_support import FrameCache, LazyFrames, PngFrames, Preferences, configure_fonts
-from animation_policy import IDLE_RULES, BalancedChooser
+from animation_policy import IDLE_RULES, BalancedChooser, IDLE_GAP, WALK_GAP, FIRST_IDLE_GAP
 
 
 def resource_dir():
@@ -278,6 +278,7 @@ class Pet(QWidget):
         self._resize()
         # state
         self.animation_origin = 'idle'
+        self.input_revision = 0
         self.state = None
         self.anim = None
         self.t = 0.0                 # time inside the current animation
@@ -286,8 +287,8 @@ class Pet(QWidget):
         self.next_blink = self._rand_blink()
         self.blink_t = -1.0
         self.idle_chooser = BalancedChooser(IDLE_RULES)
-        self.next_walk = random.uniform(60, 100)
-        self.next_behaviour = random.uniform(9, 15)
+        self.next_walk = random.uniform(*WALK_GAP)
+        self.next_behaviour = random.uniform(*FIRST_IDLE_GAP)
         self.walk_dir = 1
         self.walk_trip_at = None
         self.queue = []              # states to play after the current one-shot / loop: (state, anim, length)
@@ -438,8 +439,8 @@ class Pet(QWidget):
         if self.quiet and self.state not in ('sleep', 'sleepy', 'dangle', 'fall'):
             self.set_state('idle')
         self.bubble = None
-        self.next_walk = random.uniform(70, 130)
-        self.next_behaviour = random.uniform(14, 26)
+        self.next_walk = random.uniform(*WALK_GAP)
+        self.next_behaviour = random.uniform(*IDLE_GAP)
         self.update()
         self.schedule_save()
 
@@ -539,6 +540,8 @@ class Pet(QWidget):
         self.update()
 
     def say(self, key, table=SPEECH):
+        if self.animation_origin == 'conversation':
+            return  # Persona dialogue supplies the words for these reactions.
         lines = table.get(key)
         if lines and self.bubbles_on:
             self.bubble = [random.choice(lines), BUBBLE_SECONDS]
@@ -902,7 +905,7 @@ class Pet(QWidget):
             elif self.walking and self.next_walk <= 0 and at_loop_start and (self.next_behaviour > 0 or self.next_walk < self.next_behaviour):
                 self._start_walk()
             elif self.next_behaviour <= 0 and at_loop_start:
-                self.next_behaviour = random.uniform(14, 26)
+                self.next_behaviour = random.uniform(*IDLE_GAP)
                 choice = self._force_behaviour or self.idle_chooser.choose(now_m) or 'idle'
                 if choice != 'idle':
                     self.next_walk = max(self.next_walk, 3.0)
@@ -917,10 +920,10 @@ class Pet(QWidget):
             self.move(x, self._ground_y())
             if self.walk_trip_at is not None and self.state_t > self.walk_trip_at and self.frame_index() == 0:
                 self.walk_trip_at = None
-                self.next_walk = random.uniform(70, 130)
+                self.next_walk = random.uniform(*WALK_GAP)
                 self.set_state('trip', 'trip' if self.walk_dir < 0 else 'trip_right')
             elif self.state_t > self.state_len and self.frame_index() == 0:
-                self.next_walk = random.uniform(70, 130)
+                self.next_walk = random.uniform(*WALK_GAP)
                 self.set_state('idle')
         elif st in LOOP_STATES:
             if self.state_t > self.state_len and (self.frame_index() == 0):
@@ -1018,7 +1021,8 @@ class Pet(QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.SmoothPixmapTransform, self.scale != 1.0)
         p.drawPixmap(self.rect(), self.current_pixmap())
-        if self.bubble and self.bubbles_on:
+        reply_visible = self._assistant is not None and self._assistant.reply_bubble is not None and self._assistant.reply_bubble.isVisible()
+        if self.bubble and self.bubbles_on and not reply_visible:
             self._draw_bubble(p, self.bubble[0])
         p.end()
 
@@ -1059,6 +1063,7 @@ class Pet(QWidget):
 
     # ------------------------------------------------------------------ input
     def _touch(self):
+        self.input_revision += 1
         self.animation_origin = 'manual'
         self.last_input = time.monotonic()
         self.next_attention = random.uniform(*ATTENTION_FIRST)

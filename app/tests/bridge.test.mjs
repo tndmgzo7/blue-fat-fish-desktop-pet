@@ -10,7 +10,7 @@ test('authenticated bridge, delivery, stream and cleanup', async () => {
   let prompt, canceled;
   const api = {
     async list() { return {items:[{sessionId:'one',running:true,cwd:'Y:/项目',projections:{values:{title:'测试会话'}}}]}; },
-    async create(value) { assert.equal(value.cwd,'Y:/项目'); return {sessionId:'new'}; },
+    async create(value) { assert.equal(value.workspaceId,'workspace'); return {sessionId:'new'}; },
     async prompt(value) { prompt = value; return {accepted:true}; },
     async cancel(value) { canceled = value.sessionId; return {accepted:true}; },
     async *follow(value,signal) {
@@ -20,7 +20,9 @@ test('authenticated bridge, delivery, stream and cleanup', async () => {
       if (!signal.aborted) await new Promise(done => signal.addEventListener('abort',done,{once:true}));
     }
   };
-  const bridge = await createBridge(api,{dataFile:resolve(folder,'connection.json')});
+  const workspace={id:'workspace',path:'Y:/项目',title:'项目',sessionIds:['one']};
+  const bridge = await createBridge(api,{dataFile:resolve(folder,'connection.json'),
+    workspaceRegistry:{list(){return [workspace];},async resolveByPath(){return workspace;}}});
   try {
     const record = JSON.parse(await readFile(bridge.dataFile,'utf8'));
     const headers = {Authorization:'Bearer '+record.token,'content-type':'application/json'};

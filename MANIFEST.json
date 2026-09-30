@@ -20,8 +20,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 626,
-      "sha256": "346860ee49790d7afb019ede91755946dba167800d16c2d046b747f7c8430b1a"
+      "bytes": 1225,
+      "sha256": "8cd932bad11f426b1fcdd57447bf2c359c67b13568b572a7034520a6a82575fd"
     },
     {
       "path": "LICENSE",
@@ -35,8 +35,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 4490,
-      "sha256": "5804d51e17eb29103c5bb8b85e561137d1e2a6d7385cd542a27b29b0e864737e"
+      "bytes": 6966,
+      "sha256": "8eda37c74466480a7664b2a17ce7c411424efc17bb9fd88834297e3cc57de4ad"
     },
     {
       "path": "VERSION",
@@ -45,8 +45,8 @@
     },
     {
       "path": "app/animation_policy.py",
-      "bytes": 5488,
-      "sha256": "f926d2e12c84b8e3522cbb60d22e7867dc7b802a490f18f84800d5ca99fd1a6f"
+      "bytes": 5567,
+      "sha256": "7f247da5d0491d3aa1f5fe4c906b151c7fa79c3422de50be14b9c89b65769b1f"
     },
     {
       "path": "app/assets/atlas.json",
@@ -779,14 +779,39 @@
       "sha256": "d9b5c1a13f0fd6857362098b56e3611878b9f11dce5959b8f94d1ecee04d1ca1"
     },
     {
+      "path": "app/companion_bubble.py",
+      "bytes": 2569,
+      "sha256": "ed9284123dfff3f65b02e0e2bae73e6088a7ac67d5679d1795a9db5c1372f605"
+    },
+    {
+      "path": "app/companion_memory.py",
+      "bytes": 6010,
+      "sha256": "cf838d24a212b032e673e468dc191e8ea526b06fb9b7e30b3fce01506c7c3be0"
+    },
+    {
+      "path": "app/conversation_reactions.py",
+      "bytes": 3620,
+      "sha256": "6b78e5f2df22bf211ec082b055768d3ba9d0e66b16e1901167b7eb60c590ceb8"
+    },
+    {
       "path": "app/dsh_companion.py",
-      "bytes": 36476,
-      "sha256": "d0165ab23f525fe4984d1c0821bfee028b5940c03cfd1c5eb5f86d99f484a73a"
+      "bytes": 51125,
+      "sha256": "8f2220e3a22866644a8a232b7798006837ca9e8fd868058de893024b757a6b8e"
+    },
+    {
+      "path": "app/dsh_plugin/companion-chat.mjs",
+      "bytes": 14894,
+      "sha256": "2b687404bf0cc6ac2e0597b72d8c1926729135412459b8bd4c08a7722e8cf301"
     },
     {
       "path": "app/dsh_plugin/index.mjs",
-      "bytes": 7191,
-      "sha256": "d27ea387e7de85bbc93742269be4c5ebcc57d0a8e26b22eb5c53fb2de8c07f33"
+      "bytes": 10733,
+      "sha256": "1c947545d12321b298b80d631ae2f468313a2b750582931f089c50a58eed84b9"
+    },
+    {
+      "path": "app/dsh_plugin/persona.md",
+      "bytes": 2892,
+      "sha256": "aae69b27c4bd1bcefd3bfda2796d48ec80f1716211a9a03a94a78ae69bbbfa0a"
     },
     {
       "path": "app/pet_support.py",
@@ -810,13 +835,23 @@
     },
     {
       "path": "app/tests/bridge.test.mjs",
-      "bytes": 3039,
-      "sha256": "6d4e7731d1d8cdb888c77a77151850eac9c45d7a4a7518025a7c555c1a4d98ef"
+      "bytes": 3229,
+      "sha256": "7269831e383594ae6014d3c1b5fcc40b0f7dcdcffb87bb36995195d8a020224f"
+    },
+    {
+      "path": "app/tests/companion-chat.test.mjs",
+      "bytes": 11210,
+      "sha256": "37b82ec936bb3d77f1360fdb470a075f94771dd9c17231d85fca9e9c3efef87f"
     },
     {
       "path": "app/tests/test_animation_policy.py",
       "bytes": 8406,
       "sha256": "c0c128a585cf3c8949c3884a80fec3b6ba21ce5635211b6889f3cb671dddd304"
+    },
+    {
+      "path": "app/tests/test_companion.py",
+      "bytes": 12869,
+      "sha256": "9f67389f16ab7f1775d7f55758f7f0d87b2c03de095399a2ad90bfb5cbc252a9"
     },
     {
       "path": "app/tests/test_tail_allow.py",
@@ -825,13 +860,13 @@
     },
     {
       "path": "app/whale_pet.py",
-      "bytes": 106196,
-      "sha256": "8c48ea62214c0dd556682f24e01724f9547e3576506b89bbfdc4077e60c111ea"
+      "bytes": 106616,
+      "sha256": "a0fd41cef4018708b178ad812529fec605c981751956be74c86614208e6ec639"
     },
     {
       "path": "docs/DSH使用说明.md",
-      "bytes": 1243,
-      "sha256": "959544cd2301675b851ca719d6780327d6237c615e957ceffe28c645be22a3e4"
+      "bytes": 1929,
+      "sha256": "c1bc7755f302defec31e0387e0670515094f630a44b6a1d471d3754832be1dae"
     },
     {
       "path": "docs/previews/tail-allow.png",
@@ -850,8 +885,13 @@
     },
     {
       "path": "docs/动画状态说明.md",
-      "bytes": 5704,
-      "sha256": "a998b3fa396986c1f57dcbbff3e7cc61e7707e7c9866ae3be3841f9f018f7e1f"
+      "bytes": 8388,
+      "sha256": "d35fe0f45d3b6e2a1a33a3bd92965e9aad444e7bdc73ef2980b0a34800258fd5"
+    },
+    {
+      "path": "docs/对话与记忆说明.md",
+      "bytes": 6666,
+      "sha256": "254516b4a28b2f82ce7968f3729f4023cf9ae330f6c9dc88f92a5cc0b6a0238a"
     },
     {
       "path": "scripts/install_dsh_bridge.py",
@@ -860,8 +900,8 @@
     },
     {
       "path": "scripts/package_github.py",
-      "bytes": 14606,
-      "sha256": "66354e10442d534d123dcbbfbe66ca846e9ca1fb429c785f63f6413435b290de"
+      "bytes": 18790,
+      "sha256": "fd08ee6b44adcd6e2fdce8fd1d7994e14c3b6abfb5776ebc621c1071e1308850"
     },
     {
       "path": "启动DSH桌宠.bat",
