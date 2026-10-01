@@ -3,7 +3,9 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { mkdir, writeFile, rename, readFile, unlink } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {CompanionChat,taskView} from './companion-chat.mjs';
+// Carry the installer revision into dependencies so a live profile reload does
+// not reuse the previous bridge's cached module while its Harness keeps working.
+const {CompanionChat,readTaskView,taskStatus}=await import(new URL('./companion-chat.mjs'+new URL(import.meta.url).search,import.meta.url));
 
 const defaultFile = resolve(dirname(fileURLToPath(import.meta.url)), '../userdata/dsh-bridge.json');
 
@@ -28,7 +30,9 @@ async function bodyOf(request) {
 
 export async function createBridge(api, options = {}) {
   const token = randomBytes(32).toString('hex');
-  const dataFile = options.dataFile || defaultFile;
+  const profile = options.profile || 'desktop';
+  if (!['web','desktop'].includes(profile)) throw new Error('Unsupported dsh profile');
+  const dataFile = options.dataFile || resolve(options.dataDir || dirname(defaultFile), `dsh-bridge-${profile}.json`);
   const lifetime = new AbortController();
   const streams = new Set();
   const sockets = new Set();
@@ -54,7 +58,7 @@ export async function createBridge(api, options = {}) {
     lifetime.signal.addEventListener('abort', stop, {once:true});
     try {
       if (request.method === 'GET' && url.pathname === '/health') {
-        return json(response, 200, {apiVersion:2, build:'2026.09.30-reactions-2', name:'蓝色大肥鱼 dsh bridge', pid:process.pid,
+        return json(response, 200, {apiVersion:2, build:'2026.10.01-targeted-model', profile, name:'蓝色大肥鱼 dsh bridge', pid:process.pid,
           companionChat:!!options.llm, workspace:!!registry});
       }
       if (request.method === 'GET' && url.pathname === '/sessions') {
@@ -68,12 +72,18 @@ export async function createBridge(api, options = {}) {
                   workspaceId:workspaces.find(w=>w.sessionIds.includes(row.sessionId))?.id||null,
                   archived:registry?.archivedSessionIds?.includes(row.sessionId)||false};
         });
-        return json(response, 200, {items});
+        const sessionId=url.searchParams.get('sessionId');
+        let status;
+        if(sessionId && sessionId.length<=512) {
+          try {status=taskStatus(await readTaskView(api,sessionId,cancellation.signal,result.items));}
+          catch {status={sessionId,unavailable:true};}
+        }
+        return json(response, 200, {items,...status?{taskStatus:status}:{}});
       }
       if (request.method==='GET' && url.pathname==='/task-view') {
         const identity=url.searchParams.get('sessionId');
         if (!identity||identity.length>512) throw new Error('Session required');
-        return json(response,200,taskView(await api.inspect(identity,cancellation.signal),identity));
+        return json(response,200,await readTaskView(api,identity,cancellation.signal));
       }
       if (request.method === 'GET' && url.pathname === '/follow') {
         const sessionId = url.searchParams.get('sessionId');
@@ -104,10 +114,11 @@ export async function createBridge(api, options = {}) {
         if (url.pathname==='/emotion') {
           const identity=String(body.turnId||'');
           if (typeof body.text!=='string'||!body.text.trim()||body.text.length>4000||!identity||identity.length>128) throw new Error('Emotion input required');
+          if(body.sessionId!==undefined && (typeof body.sessionId!=='string'||body.sessionId.length>512)) throw new Error('Invalid session');
           if(emotionTurns.size>=2||emotionTurns.has(identity)) return json(response,200,{emotion:'none'});
           emotionTurns.add(identity);
           const timeout=setTimeout(stop,10000);
-          try { return json(response,200,await chat.emotion(body.text,cancellation.signal)); }
+          try { return json(response,200,await chat.emotion(body.text,cancellation.signal,body.sessionId)); }
           finally {clearTimeout(timeout);emotionTurns.delete(identity);}
         }
         if (url.pathname==='/chat') {
@@ -117,7 +128,19 @@ export async function createBridge(api, options = {}) {
           if (chatTurns.size>=2||chatTurns.has(identity)) throw new Error('我还在回答这句话呢，稍等一下。');
           chatTurns.add(identity);
           const timeout=setTimeout(stop,45000);
-          try { return json(response,200,await chat.chat(body,cancellation.signal)); }
+          try {
+            if(body.stream===true) {
+              response.writeHead(200,{'content-type':'application/x-ndjson; charset=utf-8','cache-control':'no-store'});
+              response.flushHeaders();
+              response.write(JSON.stringify({type:'start',turnId:identity})+'\n');
+              const partial=reply=>{
+                if(!response.destroyed) response.write(JSON.stringify({type:'reply',turnId:identity,reply})+'\n');
+              };
+              const value=await chat.chat(body,cancellation.signal,partial);
+              return response.end(JSON.stringify({type:'result',value})+'\n');
+            }
+            return json(response,200,await chat.chat(body,cancellation.signal));
+          }
           finally { clearTimeout(timeout); chatTurns.delete(identity); }
         }
         if (url.pathname === '/session') {
@@ -176,7 +199,7 @@ export async function createBridge(api, options = {}) {
       server.once('error', reject);
       server.listen(options.port || 0, '127.0.0.1', resolve);
     });
-    const record = {apiVersion:1, url:`http://127.0.0.1:${server.address().port}`, token, pid:process.pid};
+    const record = {apiVersion:2, profile, url:`http://127.0.0.1:${server.address().port}`, token, pid:process.pid};
     await mkdir(dirname(dataFile), {recursive:true});
     const temporary = dataFile + '.' + process.pid + '.tmp';
     await writeFile(temporary, JSON.stringify(record), {mode:0o600});

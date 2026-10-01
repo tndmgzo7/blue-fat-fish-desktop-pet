@@ -8,10 +8,11 @@ from urllib.parse import urlsplit, urlencode
 import uuid
 from companion_memory import CompanionMemory, clean
 from companion_bubble import ReplyBubble
-from conversation_reactions import REACTIONS, keyword_reaction
-from animation_policy import BalancedChooser, WORK_POOLS, SUCCESS_RULES, ERROR_RULES, tool_activity, is_service_busy
+from swim_behavior import SWIM_STATES
+from conversation_reactions import REACTIONS, keyword_reaction, is_neutral_chat
+from animation_policy import BalancedChooser, WORK_POOLS, SUCCESS_RULES, ERROR_RULES, WORK_ROTATION_GAP, tool_activity, is_service_busy
 
-from PySide6.QtCore import QObject, Signal, QTimer, QUrl, Qt
+from PySide6.QtCore import QObject, Signal, QTimer, QUrl, Qt, QPoint
 from PySide6.QtGui import QKeySequence, QShortcut, QColor
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply, QNetworkProxy
 from PySide6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QComboBox, QPushButton,
@@ -98,6 +99,22 @@ class Activity:
         for record in frame.get('records',[]):
             if record.get('type')=='event': self.consume(record.get('event',{}),replay=True)
         self.cursor=frame.get('cursor',self.cursor)
+        active=frame.get('assistantStream',{}).get('activeAttempt',{})
+        for item in active.get('stream',[]):
+            chunk=item.get('chunk',item)
+            kind=chunk.get('type')
+            if kind=='text-delta' or (kind=='block-end' and chunk.get('block',{}).get('type')=='text'):
+                self.stream('text-delta')
+            elif kind=='reasoning-delta': self.stream('reasoning-delta')
+
+    def reconcile(self, status):
+        if status.get('cursor',-1)<self.cursor: return False
+        self.cursor=status.get('cursor',self.cursor)
+        self.pending_tools={call['id']:call['state'] for call in status.get('pendingCalls',[]) if 'id' in call and 'state' in call}
+        self.pending_approvals=set(status.get('approvalIds',[]))
+        self.pending_questions=set(status.get('questionIds',[]))
+        self.state=self.resolve(status.get('state','idle'))
+        return True
 
 
 class BridgeClient(QObject):
@@ -105,10 +122,13 @@ class BridgeClient(QObject):
     frame = Signal(object)
     connection = Signal(bool, str)
     problem = Signal(str)
+    task_status = Signal(object)
+    chat_partial = Signal(object)
 
-    def __init__(self, connection_file, parent=None):
+    def __init__(self, connection_file, parent=None, profile='desktop'):
         super().__init__(parent)
         self.connection_file = Path(connection_file)
+        self.profile = profile
         self.manager = QNetworkAccessManager(self)
         self.manager.setProxy(QNetworkProxy(QNetworkProxy.NoProxy))
         self.enabled = False
@@ -121,6 +141,17 @@ class BridgeClient(QObject):
         self.polling = False
         self.timer = QTimer(self, timeout=self.refresh)
         self.timer.setInterval(2000)
+
+    def set_profile(self, profile):
+        if profile not in ('web','desktop'):
+            raise ValueError('Unsupported dsh profile')
+        self.generation += 1
+        self.stop_stream()
+        self.profile = profile
+        self.session_id = ''; self.polling = False; self.online = False
+        self.url = self.token = ''
+        self.connection.emit(False, '等待连接网页版 dsh' if profile == 'web' else '等待连接桌面版 dsh')
+        if self.enabled: self.refresh()
 
     def enable(self, on):
         self.enabled = bool(on)
@@ -136,7 +167,11 @@ class BridgeClient(QObject):
             self.connection.emit(False, '独立陪伴')
 
     def _credentials(self):
-        data = json.loads(self.connection_file.read_text(encoding='utf-8'))
+        path = self.connection_file.with_name('dsh-bridge-' + self.profile + '.json')
+        if self.profile == 'desktop' and not path.exists(): path = self.connection_file
+        data = json.loads(path.read_text(encoding='utf-8'))
+        if data.get('profile', 'desktop') != self.profile:
+            raise ValueError('Wrong dsh profile')
         parsed = urlsplit(data.get('url', ''))
         if parsed.scheme != 'http' or parsed.hostname != '127.0.0.1' or not parsed.port or parsed.username:
             raise ValueError('Invalid local bridge address')
@@ -167,16 +202,40 @@ class BridgeClient(QObject):
         else:
             request.setHeader(QNetworkRequest.ContentTypeHeader, 'application/json')
             reply = self.manager.post(request, json.dumps(data, ensure_ascii=False).encode('utf-8'))
+        streaming = route == '/chat' and isinstance(data,dict) and data.get('stream') is True
+        chat_buffer = b''; chat_result = None; chat_error = ''
+        def read_chat():
+            nonlocal chat_buffer, chat_result, chat_error
+            chat_buffer += bytes(reply.readAll())
+            while b'\n' in chat_buffer:
+                line,chat_buffer = chat_buffer.split(b'\n',1)
+                try: frame = json.loads(line.decode('utf-8'))
+                except (ValueError,UnicodeError): continue
+                if not isinstance(frame,dict): continue
+                if frame.get('type')=='result' and isinstance(frame.get('value'),dict):
+                    chat_result = frame['value']
+                elif frame.get('type')=='bridge-error':
+                    chat_error = clean(frame.get('error') or '聊天回复中断，请再试一次。',300)
+                elif (generation==self.generation and frame.get('type')=='reply'
+                      and frame.get('turnId')==data.get('turnId') and isinstance(frame.get('reply'),str)):
+                    self.chat_partial.emit({'turnId':frame['turnId'],'reply':clean(frame['reply'],300)})
+        if streaming: reply.readyRead.connect(read_chat)
         def finished():
-            raw = bytes(reply.readAll())
+            if streaming:
+                read_chat();raw=chat_buffer
+            else: raw=bytes(reply.readAll())
             error = reply.error()
             reply.deleteLater()
             if generation != self.generation:
                 return
             try:
-                value = json.loads(raw.decode('utf-8')) if raw else {}
+                value = chat_result if streaming and chat_result is not None else json.loads(raw.decode('utf-8')) if raw else {}
             except (ValueError, UnicodeError):
                 value = {}
+            if not isinstance(value,dict): value={}
+            if streaming and chat_error: value={'error':chat_error}
+            elif streaming and chat_result is None and 'error' not in value and not isinstance(value.get('reply'),str):
+                value={'error':'聊天回复中断，输入已经保留，请再试一次。'}
             if error != QNetworkReply.NoError or 'error' in value:
                 # Never include authenticated URLs or credentials in user messages.
                 message = clean(value.get('error') or '无法连接 dsh，请确认它正在运行。', 300)
@@ -194,8 +253,9 @@ class BridgeClient(QObject):
         def success(value):
             self.polling = False
             self.online = True
-            self.connection.emit(True, '已连接本机 dsh')
+            self.connection.emit(True, '已连接网页版 dsh' if self.profile == 'web' else '已连接桌面版 dsh')
             self.sessions.emit(value.get('items', []))
+            if value.get('taskStatus'): self.task_status.emit(value['taskStatus'])
             if self.session_id and self.stream is None:
                 self.follow(self.session_id)
         def failed(message):
@@ -203,7 +263,8 @@ class BridgeClient(QObject):
             self.online = False
             self.connection.emit(False, message)
             self.stop_stream()
-        reply = self.request('/sessions', callback=success, failure=failed)
+        route='/sessions'+('?' + urlencode({'sessionId':self.session_id}) if self.session_id else '')
+        reply = self.request(route, callback=success, failure=failed)
         if reply is None:
             failed('等待 dsh 桥接插件启动…')
 
@@ -259,7 +320,7 @@ STATE_LABELS = {'idle':'等待指令', 'thinking':'正在思考', 'coding':'正�
 
 
 class CommandInput(QLineEdit):
-    """One-line command entry; Alt-drag moves the floating window."""
+    """Empty input and side padding drag; text still selects normally."""
     def __init__(self, parent):
         super().__init__(parent)
         self.drag_offset = None
@@ -271,14 +332,16 @@ class CommandInput(QLineEdit):
         self.setText(text)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton and event.modifiers() & Qt.AltModifier:
+        edge = event.position().x() <= 12 or event.position().x() >= self.width() - 12
+        if event.button() == Qt.MiddleButton or (event.button() == Qt.LeftButton and
+                (not self.text() or edge or event.modifiers() & Qt.AltModifier)):
             self.drag_offset = event.globalPosition().toPoint() - self.window().pos()
             event.accept()
         else:
             super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self.drag_offset is not None and event.buttons() & Qt.LeftButton:
+        if self.drag_offset is not None and event.buttons() & (Qt.LeftButton | Qt.MiddleButton):
             self.window().move(event.globalPosition().toPoint() - self.drag_offset)
             event.accept()
         else:
@@ -287,6 +350,7 @@ class CommandInput(QLineEdit):
     def mouseReleaseEvent(self, event):
         if self.drag_offset is not None:
             self.drag_offset = None
+            self.window().companion.pet.schedule_save()
             event.accept()
         else:
             super().mouseReleaseEvent(event)
@@ -344,7 +408,8 @@ class CommandWindow(QDialog):
 
     def update_tooltip(self):
         details = self.last_reply or self.last_feedback or ('已连接 dsh' if self.companion.connected else '等待连接 dsh' if self.companion.mode == 'dsh' else '独立陪伴')
-        self.input.setToolTip('<b>蓝色大肥鱼</b><br>' + html.escape(details[:1500]).replace('\n','<br>') + '<br><br>回车发送 · Alt + 拖动移动 · 右键设置')
+        source = '网页版 dsh' if self.companion.dsh_profile == 'web' else '桌面版 dsh'
+        self.input.setToolTip('<b>蓝色大肥鱼 · ' + source + '</b><br>' + html.escape(details[:1500]).replace('\n','<br>') + '<br><br>回车发送 · 空白处或两侧拖动 · Alt + 拖动 · 右键设置')
 
     def append(self, speaker, text):
         if not text:
@@ -367,6 +432,7 @@ class CommandWindow(QDialog):
                             'QMenu::item {padding:6px 18px;} QMenu::item:selected {background:#dceafb;}')
         menu.addSeparator()
         menu.addAction('蓝色大肥鱼 · ' + (STATE_LABELS.get(comp.activity.state,'已连接') if comp.connected else '等待连接' if comp.mode=='dsh' else '独立陪伴')).setEnabled(False)
+        comp.add_connection_menu(menu)
         modes = menu.addMenu('陪伴方式')
         for mode,label in (('standalone','独立陪伴'),('dsh','跟随 dsh')):
             action=modes.addAction(label); action.setCheckable(True); action.setChecked(comp.mode==mode)
@@ -426,15 +492,20 @@ class CommandWindow(QDialog):
 
 
 class PetCompanion(QObject):
-    def __init__(self, pet, data_dir, saved=None, mode=None):
+    def __init__(self, pet, data_dir, saved=None, mode=None, profile=None):
         super().__init__(pet)
         saved = saved or {}
         self.pet = pet
         self.mode = mode or saved.get('pet_mode', 'standalone')
         self.home = saved.get('dsh_home', os.path.join(os.environ.get('USERPROFILE', str(Path.home())), '.dsh'))
+        self.dsh_profile = profile or saved.get('dsh_profile', 'desktop')
+        if self.dsh_profile not in ('web','desktop'): self.dsh_profile = 'desktop'
+        self.input_position = QPoint(saved['input_x'], saved['input_y']) if type(saved.get('input_x')) is int and type(saved.get('input_y')) is int else None
         default_project = next((p for p in Path(__file__).resolve().parents if (p/'启动桌宠.bat').is_file()), Path(__file__).resolve().parent)
         self.project = saved.get('dsh_project', str(default_project))
-        self.session_id = saved.get('dsh_session', '')
+        self.profile_sessions = dict(saved.get('dsh_profile_sessions', {}))
+        self.profile_sessions.setdefault('desktop', saved.get('dsh_session', ''))
+        self.session_id = self.profile_sessions.get(self.dsh_profile, '')
         self.auto_follow = saved.get('dsh_auto_follow', True)
         self.memory = CompanionMemory(data_dir)
         self.last_persona_reply = ''
@@ -443,6 +514,7 @@ class PetCompanion(QObject):
         self.chatting = False
         self.chat_reply = None
         self.chat_epoch = 0
+        self.chat_turn_id = ''
         self.emotion_reply = None; self.emotion_epoch = 0
         self.session_rows = {}
         self.reports_enabled = saved.get('companion_reports', True)
@@ -457,11 +529,13 @@ class PetCompanion(QObject):
         self.busy = False
         self.connected = False
         self.live_text = ''
+        self.last_stream_at = 0.0
         self.window = None
         self.sending = False
         self.creating = False
         self.rendered_state = 'idle'
         self.clip_state = ''; self.clip_deadline = 0.0
+        self.thinking_played = False
         self.pending_reaction = None
         self.reaction_last = {}; self.reaction_at = -1e12
         self.reaction_timer = QTimer(self, timeout=self.reaction_tick)
@@ -472,9 +546,11 @@ class PetCompanion(QObject):
         self.animation_timer = QTimer(self,timeout=self.animation_tick)
         self.animation_timer.setInterval(500)
         if self.mode == 'dsh': self.animation_timer.start()
-        self.client = BridgeClient(Path(data_dir) / 'dsh-bridge.json', self)
+        self.client = BridgeClient(Path(data_dir) / 'dsh-bridge.json', self, self.dsh_profile)
         self.client.sessions.connect(self.sessions_changed)
         self.client.frame.connect(self.frame_received)
+        self.client.task_status.connect(self.task_status_received)
+        self.client.chat_partial.connect(self.chat_partial_received)
         self.client.connection.connect(self.connection_changed)
         self.client.problem.connect(self.report)
         self.finished_timer = QTimer(self, singleShot=True, timeout=self.finish_animation)
@@ -487,9 +563,34 @@ class PetCompanion(QObject):
         QTimer.singleShot(0, lambda: self.client.enable(not self.closed))
 
     def preferences(self):
-        return {'pet_mode':self.mode, 'dsh_home':self.home, 'dsh_project':self.project,
+        self.profile_sessions[self.dsh_profile] = self.session_id
+        value = {'pet_mode':self.mode, 'dsh_home':self.home, 'dsh_project':self.project,
                 'dsh_session':self.session_id, 'dsh_auto_follow':self.auto_follow,
-                'companion_reports':self.reports_enabled}
+                'companion_reports':self.reports_enabled, 'dsh_profile':self.dsh_profile,
+                'dsh_profile_sessions':dict(self.profile_sessions)}
+        position = self.window.pos() if self.window else self.input_position
+        if position is not None: value.update(input_x=position.x(), input_y=position.y())
+        return value
+
+    def add_connection_menu(self, menu):
+        sources = menu.addMenu('连接 dsh')
+        for profile, label in (('web','网页版'), ('desktop','桌面版')):
+            action = sources.addAction(label); action.setCheckable(True); action.setChecked(self.dsh_profile == profile)
+            action.triggered.connect(lambda _=False, selected=profile: self.set_dsh_profile(selected))
+
+    def set_dsh_profile(self, profile):
+        if profile not in ('web','desktop') or profile == self.dsh_profile: return
+        self.profile_sessions[self.dsh_profile] = self.session_id
+        self.select('')
+        self.sending = self.creating = self.connected = False
+        self.session_rows.clear()
+        self.dsh_profile = profile
+        self.session_id = self.profile_sessions.get(profile, '')
+        if self.window:
+            self.window.sessions.blockSignals(True); self.window.sessions.clear(); self.window.sessions.blockSignals(False)
+            self.window.send_button.setEnabled(True)
+        self.client.set_profile(profile)
+        self.pet.schedule_save()
 
     def open_window(self):
         if self.window is None:
@@ -497,6 +598,9 @@ class PetCompanion(QObject):
             area = self.pet._screen_rect()
             x = max(area.left(), min(self.pet.x() + self.pet.width() // 2 - self.window.width() // 2, area.right() + 1 - self.window.width()))
             y = max(area.top(), min(self.pet.y() - self.window.height() - 8, area.bottom() + 1 - self.window.height()))
+            if self.input_position is not None:
+                x = max(area.left(), min(self.input_position.x(), area.right()+1-self.window.width()))
+                y = max(area.top(), min(self.input_position.y(), area.bottom()+1-self.window.height()))
             self.window.move(x, y)
             self.window.mode.blockSignals(True); self.window.mode.setCurrentIndex(1 if self.mode == 'dsh' else 0); self.window.mode.blockSignals(False)
             self.connection_changed(self.connected, '已连接本机 dsh' if self.connected else '等待 dsh 桥接插件启动…' if self.mode == 'dsh' else '独立陪伴')
@@ -612,8 +716,13 @@ class PetCompanion(QObject):
         if self.window: self.window.append('蓝色大肥鱼', clean(message,400))
         else: self.show_reply(message)
 
+    def chat_partial_received(self, value):
+        if not self.chatting or value.get('turnId')!=self.chat_turn_id: return
+        if isinstance(value.get('reply'),str): self.show_reply(clean(value['reply'],300))
+
     def stop_chat(self):
         self.chat_epoch += 1; self.chatting = False
+        self.chat_turn_id = ''
         self.stop_emotion()
         self.pending_reaction = None; self.reaction_timer.stop()
         reply,self.chat_reply = self.chat_reply,None
@@ -692,7 +801,8 @@ class PetCompanion(QObject):
             self.report('聊天每次最多四千字，长任务请在前面加“/任务 ”，我就直接交给 dsh。'); return
         if not self.connected:
             self.react(keyword_reaction(text))
-            self.report('呜，我还没连上聊天模型。打开 dsh 并接入本地插件后，我就能陪你聊啦。'); return
+            source = '网页版' if self.dsh_profile == 'web' else '桌面版'
+            self.report('我还没连上' + source + ' dsh。先运行“接入本地DSH.bat”并打开对应版本，右键输入框的“连接 dsh”可以切换。'); return
         self.chat(text, mode)
 
     def clear_input(self, text):
@@ -712,10 +822,11 @@ class PetCompanion(QObject):
         turn_started = time.monotonic()
         touched_at = self.interaction_stamp()
         body={**self.memory.context(text), 'text':text,'turnId':str(uuid.uuid4()),'sessionId':identity,
-              'mode':self.mode,'project':self.project,'event':event,'reason':reason}
+              'mode':self.mode,'project':self.project,'event':event,'reason':reason,'stream':True}
+        self.chat_turn_id=body['turnId']
         def done(value):
             if epoch != self.chat_epoch or identity != self.session_id: return
-            self.chatting=False; self.chat_reply=None
+            self.chatting=False; self.chat_reply=None; self.chat_turn_id=''
             reply=clean(value.get('reply',''),300)
             action=value.get('action','chat') if not only_chat and event=='user' else 'chat'
             if action in ('task','steer','new_task'):
@@ -732,7 +843,7 @@ class PetCompanion(QObject):
                     self.last_report_at=time.monotonic(); self.reported_revision=self.task_revision
         def failed(message):
             if epoch != self.chat_epoch: return
-            self.chatting=False; self.chat_reply=None
+            self.chatting=False; self.chat_reply=None; self.chat_turn_id=''
             if event=='user': self.report(message + ' 这句话还留在输入框里。')
             elif self.mode=='dsh' and identity==self.session_id:
                 fallback={'waiting':'主人，工作在等你确认或回答问题，请去 dsh 看一眼。',
@@ -741,8 +852,9 @@ class PetCompanion(QObject):
                 if reason in ('waiting','success','error','idle'): self.report(fallback[reason])
         self.chat_reply=self.client.request('/chat',body,done,failed)
         # Start the reply first. Classification runs independently, only for
-        # unmatched user dialogue; neither completion waits for the other.
-        if event == 'user' and input_emotion == 'none':
+        # unmatched dialogue beyond known neutral questions; neither completion
+        # waits for the other.
+        if event == 'user' and input_emotion == 'none' and not is_neutral_chat(text):
             emotion_epoch = self.emotion_epoch
             def classified(value):
                 if emotion_epoch != self.emotion_epoch or epoch != self.chat_epoch or identity != self.session_id: return
@@ -751,7 +863,7 @@ class PetCompanion(QObject):
                     self.react(value.get('emotion','none'))
             def ignored(_):
                 if emotion_epoch == self.emotion_epoch: self.emotion_reply = None
-            self.emotion_reply = self.client.request('/emotion', {'text':text,'turnId':body['turnId']}, classified, ignored)
+            self.emotion_reply = self.client.request('/emotion', {'text':text,'turnId':body['turnId'],'sessionId':identity}, classified, ignored)
 
     def send_task(self, text, mode='queue', original=None, new=False):
         if not text: return
@@ -806,6 +918,8 @@ class PetCompanion(QObject):
                     '睡觉':lambda: self.pet.set_state('sleepy'), '醒醒':lambda: self.pet.recall(),
                     '安静':lambda: self.pet.set_quiet(True), '活泼':lambda: self.pet.set_quiet(False),
                     '隐藏':self.pet.hide_pet, '散步':lambda: self.pet.do_action('walk', 0),
+                    '游泳':lambda: self.pet.do_action('swim',0),
+                    '停止游泳':lambda:self.pet._begin_swim_return() if self.pet.state in SWIM_STATES else None,
                     '写代码':lambda: self.pet.do_action('ds_code_eureka', 0),
                     '摸尾巴':lambda: self.pet.interact('tail'), '摸头':lambda: self.pet.do_action('petted', 2), '开心':lambda: self.pet.do_action('happy', 0)}
         command = text.strip().lstrip('/')
@@ -831,6 +945,23 @@ class PetCompanion(QObject):
         reason,self.report_reason=self.report_reason,''
         if reason: self.chat('',event='report',reason=reason)
 
+    def task_status_received(self, status):
+        if self.mode!='dsh' or status.get('sessionId')!=self.session_id or status.get('unavailable'): return
+        if status.get('cursor',-1)<self.activity.cursor: return
+        value=dict(status)
+        # A live text stream is newer than the most recent durable step/start.
+        if (value.get('running') is True and value.get('state')=='thinking' and self.activity.state=='replying'
+                and time.monotonic()-self.last_stream_at<5 and value.get('cursor')==self.activity.cursor):
+            value['state']='replying'
+        # Reconnecting to an old completed task must not celebrate again.
+        if value.get('state') in ('success','error') and not self.busy:
+            value['state']='idle'
+        previous=self.rendered_state
+        if self.activity.reconcile(value):
+            self.set_activity(self.activity.state)
+            if previous in WORK_POOLS and self.activity.state in ('success','error','idle'):
+                self.queue_report(self.activity.state)
+
     def frame_received(self, frame):
         kind = frame.get('type')
         if kind == 'bridge-error':
@@ -853,6 +984,7 @@ class PetCompanion(QObject):
                     self.queue_report(state)
             return
         if kind == 'assistant-stream':
+            self.last_stream_at=time.monotonic()
             value = frame.get('frame', {})
             if value.get('type') == 'start':
                 self.live_text = ''; self.set_activity(self.activity.stream('start'))
@@ -878,6 +1010,8 @@ class PetCompanion(QObject):
     def can_animate(self):
         if self.pet.dragging or self.pet.menu_open or self.pet.press_pos is not None or not self.pet.isVisible():
             return False
+        if self.pet.state in ('walk','trip')+SWIM_STATES:
+            return False
         return self.pet.animation_origin in ('idle','automatic','work') or self.pet.state == 'idle' or (self.pet.state == 'expr' and self.pet.state_len >= 1e8)
 
     def interaction_stamp(self):
@@ -901,7 +1035,7 @@ class PetCompanion(QObject):
         now = time.monotonic()
         if now > expires or self.interaction_stamp() != touched:
             self.pending_reaction = None; self.reaction_timer.stop(); return
-        if not self.can_animate() or self.pet.queue or self.pet.state in ('sleep', 'sleepy', 'wake', 'dangle', 'fall', 'land', 'walk', 'trip'):
+        if not self.can_animate() or self.pet.queue or self.pet.state in ('sleep', 'sleepy', 'wake', 'dangle', 'fall', 'land', 'walk', 'trip')+SWIM_STATES:
             return
         reaction = REACTIONS[emotion]
         self.pending_reaction = None; self.reaction_timer.stop()
@@ -917,6 +1051,7 @@ class PetCompanion(QObject):
     def set_activity(self,state):
         if self.activity.pending_approvals or self.activity.pending_questions: state='waiting'
         changed=state!=self.rendered_state
+        if changed: self.thinking_played=False
         self.rendered_state=state; self.activity.state=state
         self.busy=state in WORK_POOLS and self.mode=='dsh'
         if self.window:
@@ -958,10 +1093,17 @@ class PetCompanion(QObject):
         if not self.busy or not self.can_animate(): return
         now=time.monotonic(); state=self.activity.state
         if state not in self.work_pools: return
+        if state=='thinking':
+            if self.thinking_played: return
+            self.thinking_played=True
+            self.clip_state=state;self.clip_deadline=0.0
+            self.finished_timer.stop()
+            self.pet.set_state('dsh_thinking_once',origin='work')
+            return
         owns_clip=self.pet.state=='expr' and self.pet.state_len>=1e8
         if state==self.clip_state and now<self.clip_deadline and owns_clip: return
         animation=self.work_pools[state].choose(now)
-        self.clip_state=state; self.clip_deadline=now+self.pet.rng.uniform(12,22)
+        self.clip_state=state; self.clip_deadline=now+self.pet.rng.uniform(*WORK_ROTATION_GAP)
         if animation and (self.pet.anim.name!=animation or not owns_clip):
             self.finished_timer.stop(); self.pet.set_state('expr',animation,length=1e9,origin='work')
 

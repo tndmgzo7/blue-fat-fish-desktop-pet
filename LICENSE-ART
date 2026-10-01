@@ -1,7 +1,8 @@
 Art assets of "蓝色大肥鱼 / blue-fat-fish"
 
 Scope: the sprite atlas and icons in app/assets/ (atlas*.png, atlas.json, icon.*), the extra frame sequences in
-app/assets/extra/ (ds_code_eureka, ds_tail_allow: PNG frames and their timing/source JSON), the preview images in
+app/assets/extra/ (all subfolders, including ds_code_eureka, ds_tail_allow, ds_full_belly*, ds_swim_*: PNG frames
+and their timing/source JSON, plus additions.json), the preview images in
 docs/previews/, the pet as shown in the desktop screenshots in docs/screenshots/ (the third-party application UI
 visible in those screenshots is not covered), and any release assets containing these images.
 

@@ -1,0 +1,189 @@
+{
+  "set": "ds_swim_water",
+  "fps": 10,
+  "frame_ms": 100,
+  "canvas": [
+    256,
+    256
+  ],
+  "frame_files": "frames/<anim>/NN.png (RGBA 256x256, transparent; the water is drawn into every frame)",
+  "strips": "spritesheets/<anim>.png (frame i at x = 256*i)",
+  "scale": {
+    "head_width_px": 72.0,
+    "vs_standing_head": 0.6
+  },
+  "water_surface": {
+    "y": 142.0,
+    "fixed": "same y in EVERY frame of the set (swim, turn, leap); only the small ripples move",
+    "ripple_formula": "y = surface + A1 sin(2pi x/L1 - 2pi t/18) + A2 sin(2pi x/L2 + 4pi t/18) (x, y in px of the frame; t = frame phase)",
+    "ripple": {
+      "A1_px": 0.9,
+      "L1_px": 64.0,
+      "A2_px": 0.5,
+      "L2_px": 37.0,
+      "loop_frames": 18
+    },
+    "phase": {
+      "swim": "t = frame index 0..17 (same for both facings)",
+      "turn": "t = 0, 1 (the turn replaces swim frames 0, 1)",
+      "leap": "t = 18 j / 19 for leap frame j (0 .. 19): frame 0 = phase 0, frame 19 = phase 18 = 0"
+    },
+    "drawing": {
+      "line": "blue line + light highlight above it",
+      "band": "light blue, alpha 0.3 at the surface -> 0 over 44 px",
+      "tint": "submerged character pixels tinted toward [120.0, 185.0, 240.0] by 0.24..0.4 (deeper = more)",
+      "edge_fade_px": 16.0,
+      "foam": "where the body crosses the surface",
+      "shimmer": "light dashes under the line, drift one spacing per cycle"
+    },
+    "swimmer": {
+      "tilt_deg_nose_up": 30.0,
+      "body_centre_y": 138.15,
+      "above": "head, shoulders, raised hand",
+      "below": "hair ends, body, legs, big tail (tinted)"
+    },
+    "tail_splash": {
+      "frames_tail_above_surface": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "emerges_at": [
+        3
+      ],
+      "re_enters_at": [
+        8
+      ],
+      "fx": "small crown at the crossing + droplets when it breaks out; small re-entry splash + ring when it goes back in"
+    },
+    "leap": "starts from and falls back into the same surface line; parts under the surface tinted, the burst / re-entry drawings fade out under the water"
+  },
+  "animations": {
+    "ds_swim_water": {
+      "frames": 18,
+      "facing": "right",
+      "loop": true,
+      "loop_section": {
+        "start": 0,
+        "end_exclusive": 18
+      },
+      "cycle_s": 1.8,
+      "note": "repeat 0..17; mirror of ds_swim_water_left"
+    },
+    "ds_swim_water_left": {
+      "frames": 18,
+      "facing": "left",
+      "loop": true,
+      "loop_section": {
+        "start": 0,
+        "end_exclusive": 18
+      },
+      "cycle_s": 1.8,
+      "note": "repeat 0..17; as drawn"
+    },
+    "ds_swim_water_turn_to_right": {
+      "frames": 2,
+      "one_shot": true,
+      "play_after": "ds_swim_water_left frame 17 (end of a cycle)",
+      "then": "ds_swim_water frame 2",
+      "note": "squash pop sx 0.80 (old facing, phase 0) -> 0.88 (new facing, phase 1) -> 1.0; continue from frame 2 so tail stroke and ripples continue without a jump"
+    },
+    "ds_swim_water_turn_to_left": {
+      "frames": 2,
+      "one_shot": true,
+      "play_after": "ds_swim_water frame 17 (end of a cycle)",
+      "then": "ds_swim_water_left frame 2"
+    },
+    "ds_swim_water_leap": {
+      "frames": 20,
+      "facing": "right",
+      "one_shot": true,
+      "duration_s": 2.0,
+      "play_after": "ds_swim_water frame 17 (seamless; from any other frame the ripples jump once)",
+      "return_to": {
+        "anim": "ds_swim_water",
+        "frame": 1
+      },
+      "segments": {
+        "anticipation": {
+          "frames": [
+            0,
+            0
+          ],
+          "seconds": 0.1
+        },
+        "burst": {
+          "frames": [
+            1,
+            2
+          ],
+          "seconds": 0.2
+        },
+        "apex": {
+          "frames": [
+            3,
+            8
+          ],
+          "seconds": 0.6
+        },
+        "dive": {
+          "frames": [
+            9,
+            11
+          ],
+          "seconds": 0.3
+        },
+        "reentry": {
+          "frames": [
+            12,
+            15
+          ],
+          "seconds": 0.4
+        },
+        "rings": {
+          "frames": [
+            16,
+            18
+          ],
+          "seconds": 0.3
+        },
+        "back": {
+          "frames": [
+            19,
+            19
+          ],
+          "seconds": 0.1
+        }
+      },
+      "empty_character_frames": [
+        16,
+        17,
+        18
+      ]
+    },
+    "ds_swim_water_leap_left": {
+      "frames": 20,
+      "facing": "left",
+      "one_shot": true,
+      "play_after": "ds_swim_water_left frame 17",
+      "return_to": {
+        "anim": "ds_swim_water_left",
+        "frame": 1
+      },
+      "note": "mirror image of ds_swim_water_leap (as drawn)"
+    }
+  },
+  "sequence_sheets": [
+    "previews/ds_swim_water_sheet.png",
+    "previews/ds_swim_water_leap_sheet.png"
+  ],
+  "gifs": {
+    "ds_swim_water": "previews/ds_swim_water.gif (18 frames: the swim loop)",
+    "ds_swim_water_left": "previews/ds_swim_water_left.gif (18 frames: the swim loop)",
+    "ds_swim_water_leap": "previews/ds_swim_water_leap.gif (55 frames: swim 0-17 -> leap 0-19 -> swim 1-17)",
+    "ds_swim_water_leap_left": "previews/ds_swim_water_leap_left.gif (55 frames: swim 0-17 -> leap 0-19 -> swim 1-17)",
+    "back_and_forth": "previews/ds_swim_water_back_and_forth.gif (72 frames: left 2-17, 0-17 -> turn -> right 2-17, 0-17 -> turn -> loops)"
+  }
+}

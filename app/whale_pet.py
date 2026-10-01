@@ -31,11 +31,12 @@ from datetime import datetime
 
 from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QRect, QRectF, QElapsedTimer
 from PySide6.QtGui import (QPixmap, QPainter, QAction, QCursor, QGuiApplication, QIcon, QImage, QFont,
-                           QFontMetrics, QPainterPath, QPen, QColor, QPolygonF, QImageReader)
+                           QFontMetrics, QPainterPath, QPen, QColor, QPolygonF, QImageReader, QRegion)
 from PySide6.QtWidgets import QApplication, QWidget, QMenu, QSystemTrayIcon, QMessageBox
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from pet_support import FrameCache, LazyFrames, PngFrames, Preferences, configure_fonts
 from animation_policy import IDLE_RULES, BalancedChooser, IDLE_GAP, WALK_GAP, FIRST_IDLE_GAP
+from swim_behavior import SwimBehavior, SWIM_STATES, SWIM_RENDER_SCALE
 
 
 def resource_dir():
@@ -130,7 +131,6 @@ TOKEN_IDLE = (60.0, 100.0)         # s of user idle (random per round) -> ds_tok
 TOKEN_MOVE_PX = 8                  # the cursor moving more than this (manhattan, screen px) counts as activity
 TOKEN_HIDE_SECONDS = 2.0           # caught (cursor moved / any input): ds_token_hide loop this long, then idle
 TOKEN_MENU_GRACE = 2.0             # started from the Play menu: cursor moves in the first s do not count
-TRIP_CHANCE = 0.05           # probability that a walk ends in a trip
 # random idle behaviours: (state, weight). 'idle' = just keep standing / breathing a while longer
 IDLE_BEHAVIOURS = [(rule.name, rule.weight) for rule in IDLE_RULES]
 # state -> default animation
@@ -140,9 +140,10 @@ STATE_ANIM = {'idle': 'idle', 'walk': 'walk_right', 'petted': 'petted', 'petted_
               'curtsy': 'curtsy', 'stretch': 'stretch', 'tea': 'tea', 'curious': 'curious', 'dance': 'dance',
               'sit_down': 'sit_down', 'sit': 'sit', 'stand_up': 'stand_up', 'trip': 'trip'}
 STATE_ANIM.update({k: k for k in TSUN_STATES + PLAY_STATES + DS_STATES})
+STATE_ANIM['dsh_thinking_once']='dsh_thinking_once'
 LOOP_STATES = ('petted', 'angry', 'sad', 'expr', 'wave', 'tea', 'curious', 'dance', 'sit')      # end after state_len
 ONESHOT_STATES = ('happy', 'land', 'surprised', 'curtsy', 'stretch', 'petted_end', 'sit_down', 'stand_up', 'trip',
-                  'wake', 'sleepy') + TSUN_STATES + PLAY_STATES + DS_STATES   # entry, loop section (held), exit to idle
+                  'wake', 'sleepy', 'dsh_thinking_once') + TSUN_STATES + PLAY_STATES + DS_STATES   # entry, loop section (held), exit to idle
 # Actions menu: (label, state, length)
 ACTIONS = [('开心跳跃 Happy', 'happy', 0), ('摸头 Pet', 'petted', 2.0), ('生气 Angry', 'angry', 3.0), ('哭哭 Sad', 'sad', 3.5),
            ('惊讶 Surprised', 'surprised', 0), ('散步 Walk', 'walk', 0), ('挥手 Wave', 'wave', 2.4),
@@ -167,6 +168,14 @@ GRAB = (128, 50)             # grab point (cell coords) when picked up: top of t
 STATE_ANIM.update({'ds_code_eureka':'ds_code_eureka', 'dsh_success':'dsh_success'})
 STATE_ANIM.update({name:name for name in TAIL_ALLOW_STATES})
 ONESHOT_STATES += ('ds_code_eureka', 'dsh_success') + TAIL_ALLOW_STATES
+STATE_ANIM['ds_full_belly']='ds_full_belly'
+ONESHOT_STATES += ('ds_full_belly',)
+FULL_BELLY_SECONDS=12.9  # Complete 9.7 s intro, then one 3.2 s rub/doze cycle.
+SPEECH['ds_full_belly']=['吃、吃不下了…']
+SPEECH2['ds_full_belly']=['嗝…好撑']
+SPEAK_AT['ds_full_belly']='frame'
+SPEAK2_AT['ds_full_belly']=35
+ACTIONS += [('吃饱揉肚子','ds_full_belly',FULL_BELLY_SECONDS),('屏幕游泳','swim',0)]
 SPEECH.update({'ds_code_eureka':['有了！'], 'dsh_success':['有了！完成啦～']})
 SPEAK_AT.update({'ds_code_eureka':'frame', 'dsh_success':'frame', 'ds_tail_allow':'section',
                  'ds_tail_allow_touched':'frame', 'ds_tail_allow_timeout':'frame'})
@@ -176,7 +185,7 @@ ACTIONS.append(('写代码 → 灵光一闪', 'ds_code_eureka', 0))
 
 
 class Anim:
-    def __init__(self, name, frames, fps, loop, root_motion=None, section=None, flips=None, speak_frame=None):
+    def __init__(self, name, frames, fps, loop, root_motion=None, section=None, flips=None, speak_frame=None, canvas=None):
         self.name, self.frames, self.fps, self.loop = name, frames, fps, loop
         self.speak_frame = speak_frame                  # SPEAK_AT 'frame': the bubble appears at this frame
         self.flips = flips or [False] * len(frames)     # frame drawn mirrored (flip_x alias)
@@ -184,6 +193,7 @@ class Anim:
         self.root_motion = root_motion
         # [a, b): frames that repeat while the state is held (entry frames before, exit-to-idle frames after)
         self.section = tuple(section) if section else None
+        self.canvas=tuple(canvas) if canvas else None
 
     def __len__(self):
         return len(self.frames)
@@ -232,6 +242,7 @@ class Sprites:
         self.anims['ds_code_eureka'] = Anim('ds_code_eureka', frames, timing['fps'], False, speak_frame=41)
         self.anims['dsh_typing'] = Anim('dsh_typing', frames[:25], timing['fps'], True)
         self.anims['dsh_thinking'] = Anim('dsh_thinking', frames[25:40], timing['fps'], True)
+        self.anims['dsh_thinking_once'] = Anim('dsh_thinking_once', frames[25:40], timing['fps'], False)
         self.anims['dsh_success'] = Anim('dsh_success', frames[40:76], timing['fps'], False, speak_frame=1)
         tail = os.path.join(folder, 'extra', 'ds_tail_allow')
         with open(os.path.join(tail, 'timing.json'), encoding='utf-8') as source:
@@ -244,6 +255,14 @@ class Sprites:
         self.anims['ds_tail_allow'] = Anim('ds_tail_allow', frames[:28], timing['fps'], False, section=(16,28))
         self.anims['ds_tail_allow_touched'] = Anim('ds_tail_allow_touched', frames[28:46], timing['fps'], False, speak_frame=1)
         self.anims['ds_tail_allow_timeout'] = Anim('ds_tail_allow_timeout', frames[46:60], timing['fps'], False, speak_frame=1)
+        with open(os.path.join(folder,'extra','additions.json'),encoding='utf-8') as source:
+            additions=json.load(source)['animations']
+        for name,metadata in additions.items():
+            paths=[os.path.join(folder,'extra',metadata['folder'],f'{i:02d}.png') for i in range(metadata['frames'])]
+            missing=[path for path in paths if not os.path.isfile(path)]
+            if missing:raise RuntimeError('Missing '+name+' animation frames: '+', '.join(missing))
+            self.anims[name]=Anim(name,PngFrames(self.cache,paths),metadata['fps'],metadata['loop'],
+                section=metadata.get('loop_section'),speak_frame=metadata.get('speak_frame'),canvas=metadata['canvas'])
         for alias,source_name in (('dsh_waiting','tsun_peek'),('dsh_busy','ds_server_busy')):
             source = self.anims[source_name]
             first,last = source.section
@@ -255,7 +274,7 @@ class Sprites:
         return self.anims[k]
 
 
-class Pet(QWidget):
+class Pet(SwimBehavior,QWidget):
     def __init__(self, sprites, scale=1.0, selftest=False, preferences=None):
         flags = Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.NoDropShadowWindowHint
         # Qt.Tool keeps the pet out of the Windows taskbar; on macOS tool windows hide when the app
@@ -271,7 +290,9 @@ class Pet(QWidget):
         self.preferences = preferences
         self.quiet = False
         self.walking = True
+        self.swimming = True
         self._paint_key = None
+        self._swim_bounds = {}
         self._tray = None
         self._assistant = None
         self.save_timer = QTimer(self, singleShot=True, timeout=self.save_preferences)
@@ -359,8 +380,15 @@ class Pet(QWidget):
 
     # ------------------------------------------------------------------ geometry helpers
     def _resize(self):
-        s = int(round(self.sp.cell * self.scale))
-        self.setFixedSize(s, s)
+        anim=getattr(self,'anim',None)
+        canvas=anim.canvas if anim and anim.canvas else (self.sp.cell,self.sp.cell)
+        self.display_scale=self.scale
+        if anim and anim.name.startswith('ds_swim_full'):
+            self.display_scale*=SWIM_RENDER_SCALE
+        if canvas!=(self.sp.cell,self.sp.cell):
+            r=self._screen_rect()
+            self.display_scale=min(self.display_scale,r.width()/canvas[0],r.height()/canvas[1])
+        self.setFixedSize(*(max(1,int(round(side*self.display_scale))) for side in canvas))
 
     def _screen_rect(self):
         point = self.geometry().center()
@@ -385,7 +413,11 @@ class Pet(QWidget):
         r = rect or self._screen_rect()
         # The cell has a little transparent padding below the feet.
         x = max(r.left(), min(self.x(), max(r.left(), r.right() + 1 - self.width())))
-        y = r.bottom() + 1 - int(round(self.sp.baseline * self.scale)) if ground else max(r.top(), min(self.y(), self._ground_y()))
+        if self.state in SWIM_STATES:
+            y=max(r.top(),min(self.y(),max(r.top(),r.bottom()+1-self.height())))
+            self.swim_x=float(x);self.swim_y=float(y)
+        else:
+            y = r.bottom() + 1 - int(round(self.sp.baseline * self.scale)) if ground else max(r.top(), min(self.y(), self._ground_y()))
         self.move(x, y)
 
     def _watch_screen(self, screen):
@@ -399,6 +431,7 @@ class Pet(QWidget):
                 pass
             self._watch_screen(screen)
         if not self.dragging:
+            if self.state in SWIM_STATES:self._resize()
             self._clamp_position(ground=self.state not in ('dangle', 'fall'))
             self.schedule_save()
 
@@ -407,6 +440,7 @@ class Pet(QWidget):
         self.bubbles_on = data.get('bubbles', SPEECH_BUBBLES)
         self.quiet = data.get('quiet', False)
         self.walking = data.get('walking', True)
+        self.swimming = data.get('swimming',True)
         self.hunger = data.get('hunger', 1.0)
         if 'fed_at' in data:
             self.last_fed = time.monotonic() - max(0.0, time.time() - data['fed_at'])
@@ -426,7 +460,7 @@ class Pet(QWidget):
             return
         screen = QGuiApplication.screenAt(self.geometry().center()) or QGuiApplication.primaryScreen()
         data = {'scale': self.scale, 'bubbles': self.bubbles_on, 'quiet': self.quiet, 'walking': self.walking,
-                'hunger': self.hunger, 'x': self.x(), 'screen': screen.name(), 'meal_done': self.meal_done}
+                'swimming':self.swimming,'hunger': self.hunger, 'x': self.x(), 'screen': screen.name(), 'meal_done': self.meal_done}
         if self.last_fed > 0:
             data['fed_at'] = time.time() - max(0.0, time.monotonic() - self.last_fed)
         if self._assistant is not None:
@@ -504,6 +538,8 @@ class Pet(QWidget):
 
     # ------------------------------------------------------------------ state machine
     def set_state(self, state, anim=None, length=0.0, keep_queue=False, origin=None):
+        previous=self.state
+        center_x=self.x()+self.width()/2
         if origin is not None:
             self.animation_origin = origin
         elif state == 'idle':
@@ -516,6 +552,10 @@ class Pet(QWidget):
             self.queue = []
         self.state = state
         self.anim = self.sp[anim or STATE_ANIM[state]]
+        self._resize()
+        if previous in SWIM_STATES and state not in SWIM_STATES:
+            self.move(round(center_x-self.width()/2),self._ground_y())
+            self._clamp_position()
         self.t = 0.0
         self.state_t = 0.0
         self.state_len = length
@@ -527,6 +567,7 @@ class Pet(QWidget):
         self._sec_cyc = 0
         self._sec_said = False
         self._said_frame = False
+        self._said_frame2 = False
         if state in TAIL_ALLOW_STATES:
             self.bubble = None
             if state == 'ds_tail_allow' and not length:
@@ -631,6 +672,8 @@ class Pet(QWidget):
             self.set_state('trip', 'trip' if self.walk_dir < 0 else 'trip_right')
         elif st == 'walk':
             self._start_walk()
+        elif st == 'swim':
+            self.start_swim(duration=length)
         elif st == 'ds_tail_touch':
             self.start_tail_touch()
         elif st == 'ds_not_fat':
@@ -818,17 +861,20 @@ class Pet(QWidget):
         if self.x() + self.width() > r.right() - 80:
             self.walk_dir = -1
         ln = random.uniform(2.5, 6)
-        self.walk_trip_at = random.uniform(1.0, ln) if random.random() < TRIP_CHANCE else None
+        self.walk_trip_at = None
         self.set_state('walk', 'walk_right' if self.walk_dir > 0 else 'walk_left', ln)
 
     def _tick(self):
         now = self.clock.elapsed()
-        dt = min(0.1, (now - self.last_ms) / 1000.0)
+        elapsed = max(0.0, (now - self.last_ms) / 1000.0)
+        dt = min(0.1, elapsed)
         self.last_ms = now
         if self.menu_open:
             return
-        self.t += dt
-        self.state_t += dt
+        previous_t = self.t
+        animation_dt=elapsed if self.state in SWIM_STATES else dt
+        self.t += animation_dt
+        self.state_t += elapsed if self.state in ('walk',)+SWIM_STATES else dt
         st = self.state
         now_m = time.monotonic()
         idle_for = now_m - self.last_input
@@ -852,7 +898,7 @@ class Pet(QWidget):
         # mouse held on her head without dragging -> 'hmph'
         if (self.press_pos is not None and not self.dragging and not self.press_consumed and self.press_cell is not None
                 and self.press_cell[1] < HEAD_ZONE_Y and now_m - self.press_t > HOLD_HMPH_SECONDS
-                and st not in ('sleep', 'sleepy', 'wake', 'dangle', 'fall') and not self.clicks_ignored(now_m)):
+                and st not in ('sleep', 'sleepy', 'wake', 'dangle', 'fall')+SWIM_STATES and not self.clicks_ignored(now_m)):
             self.press_consumed = True
             self.click_timer.stop()
             self._touch()
@@ -906,7 +952,8 @@ class Pet(QWidget):
                 self._start_walk()
             elif self.next_behaviour <= 0 and at_loop_start:
                 self.next_behaviour = random.uniform(*IDLE_GAP)
-                choice = self._force_behaviour or self.idle_chooser.choose(now_m) or 'idle'
+                allowed=None if self.swimming else {rule.name for rule in IDLE_RULES if rule.name!='swim'}
+                choice = self._force_behaviour or self.idle_chooser.choose(now_m,allowed) or 'idle'
                 if choice != 'idle':
                     self.next_walk = max(self.next_walk, 3.0)
                     self.start_behaviour(choice)
@@ -918,13 +965,16 @@ class Pet(QWidget):
                 self.anim = self.sp['walk_right' if self.walk_dir > 0 else 'walk_left']
                 x = max(r.left(), min(x, max(r.left(), r.right() + 1 - self.width())))
             self.move(x, self._ground_y())
-            if self.walk_trip_at is not None and self.state_t > self.walk_trip_at and self.frame_index() == 0:
+            cycle = len(self.anim) / self.anim.fps
+            crossed_loop = int(self.t / cycle) > int(previous_t / cycle)
+            boundary = self.frame_index() == 0 or crossed_loop
+            end_at = min(self.state_len, self.walk_trip_at) if self.walk_trip_at is not None else self.state_len
+            if self.state_t >= end_at and (boundary or self.state_t >= end_at + cycle):
                 self.walk_trip_at = None
                 self.next_walk = random.uniform(*WALK_GAP)
                 self.set_state('trip', 'trip' if self.walk_dir < 0 else 'trip_right')
-            elif self.state_t > self.state_len and self.frame_index() == 0:
-                self.next_walk = random.uniform(*WALK_GAP)
-                self.set_state('idle')
+        elif st in SWIM_STATES:
+            self._swim_step(previous_t,elapsed)
         elif st in LOOP_STATES:
             if self.state_t > self.state_len and (self.frame_index() == 0):
                 self.next_in_queue()
@@ -937,6 +987,9 @@ class Pet(QWidget):
             if self.state_t >= self.state_len:
                 self.finish_tail_allow(False)
         elif st in ONESHOT_STATES:
+            second_frame=SPEAK2_AT.get(st)
+            if isinstance(second_frame,int) and not self._said_frame2 and self.frame_index()>=second_frame:
+                self._said_frame2=True;self.say(st,SPEECH2)
             if (SPEAK_AT.get(st) == 'frame' and not self._said_frame and self.anim.speak_frame is not None
                     and self.frame_index() >= self.anim.speak_frame):
                 self._said_frame = True
@@ -973,7 +1026,7 @@ class Pet(QWidget):
                 self.move(self.x(), int(y))
         self._refresh_frame()
         if not self.selftest:
-            interval = 16 if self.state in ('fall', 'dangle', 'walk', 'trip') else min(50, max(16, int(500 / self.anim.fps)))
+            interval = 16 if self.state in ('fall', 'dangle', 'walk', 'trip')+SWIM_STATES else min(50, max(16, int(500 / self.anim.fps)))
             if self.timer.interval() != interval:
                 self.timer.setInterval(interval)
 
@@ -1017,9 +1070,18 @@ class Pet(QWidget):
         name, i = self._frame_key()
         return self.sp[name].frames[i]
 
+    def reply_anchor_rect(self):
+        if self.state not in SWIM_STATES:return self.geometry()
+        key=self._frame_key()
+        if key not in self._swim_bounds:
+            self._swim_bounds[key]=QRegion(self.current_pixmap().mask()).boundingRect()
+        bounds=self._swim_bounds[key];s=self.display_scale
+        return QRect(self.x()+round(bounds.x()*s),self.y()+round(bounds.y()*s),
+                     max(1,round(bounds.width()*s)),max(1,round(bounds.height()*s)))
+
     def paintEvent(self, ev):
         p = QPainter(self)
-        p.setRenderHint(QPainter.SmoothPixmapTransform, self.scale != 1.0)
+        p.setRenderHint(QPainter.SmoothPixmapTransform, self.display_scale != 1.0)
         p.drawPixmap(self.rect(), self.current_pixmap())
         reply_visible = self._assistant is not None and self._assistant.reply_bubble is not None and self._assistant.reply_bubble.isVisible()
         if self.bubble and self.bubbles_on and not reply_visible:
@@ -1129,11 +1191,14 @@ class Pet(QWidget):
             return
         if self.state in ('dangle', 'fall'):
             return
+        if self.request_swim_leap():
+            self.click_timer.stop();return
         self.click_cell = self.press_cell
         self.click_timer.start(QApplication.doubleClickInterval())
 
     def _single_click(self):
         self._touch()
+        if self.request_swim_leap():return
         now = time.monotonic()
         if self.consume_tail_click():
             return
@@ -1193,6 +1258,7 @@ class Pet(QWidget):
         # Qt sends a release after the double-click. Do not schedule another single-click.
         self.press_consumed = True
         self.click_cell = None
+        if e.button()==Qt.LeftButton and self.request_swim_leap():return
         if e.button() == Qt.LeftButton and self.consume_tail_click():
             return
         if e.button() == Qt.LeftButton and self.state not in ('dangle', 'fall') and not self.clicks_ignored():
@@ -1228,6 +1294,7 @@ class Pet(QWidget):
         m.addAction(f'蓝色大肥鱼 · 饱腹度 {round(self.hunger * 100)}%').setEnabled(False)
         if self._assistant is not None:
             m.addAction('输入指令…').triggered.connect(self._assistant.open_window)
+            self._assistant.add_connection_menu(m)
             modes = m.addMenu('运行模式')
             for key, label in (('standalone', '独立陪伴'), ('dsh', '跟随 dsh')):
                 action = modes.addAction(label); action.setCheckable(True); action.setChecked(self._assistant.mode == key)
@@ -1269,6 +1336,8 @@ class Pet(QWidget):
         w = m.addAction('自由散步'); w.setCheckable(True); w.setChecked(self.walking)
         w.setEnabled(not self.quiet)
         w.triggered.connect(self.set_walking)
+        swim=m.addAction('自由游泳');swim.setCheckable(True);swim.setChecked(self.swimming)
+        swim.setEnabled(not self.quiet);swim.triggered.connect(self.set_swimming)
         m.addSeparator()
         m.addAction('睡觉 Sleep').triggered.connect(lambda: self.set_state('sleepy'))
         m.addAction('叫醒她').triggered.connect(lambda: (self._touch(), self.set_state('wake')))
@@ -1323,6 +1392,8 @@ class Pet(QWidget):
                          (after, None, RICE_DANCE_SECONDS if after == 'dance' else 0.0)],
                 'cookie': [('gift_cookie', None, TSUN_LEN['gift_cookie'])],
                 'poke': [('tsun_point', None, TSUN_LEN['tsun_point'])]}[kind]
+        if kind in ('feed','rice') and self.hunger>=1.0:
+            plan=[plan[0],('ds_full_belly',None,FULL_BELLY_SECONDS)]
         if self.state in ('sit', 'sit_down'):          # stand up first
             self.set_state('stand_up')
             self.queue = plan
@@ -1338,6 +1409,10 @@ class Pet(QWidget):
     def set_scale(self, s):
         if not math.isfinite(s) or not 0.5 <= s <= 2.0:
             return
+        if self.state in SWIM_STATES:
+            center=self.geometry().center();self.scale=s;self._resize()
+            self.move(center.x()-self.width()//2,center.y()-self.height()//2)
+            self._clamp_position(ground=False);self._paint_key=None;self.update();self.schedule_save();return
         cx, bottom = self.x() + self.width() // 2, self.y() + int(self.sp.baseline * self.scale)
         self.scale = s
         self._resize()
@@ -1357,6 +1432,7 @@ def main():
     ap.add_argument('--out', default='selftest_out')
     ap.add_argument('--data-dir', help='override the portable preferences directory')
     ap.add_argument('--mode', choices=('standalone','dsh'), help='desktop companion mode')
+    ap.add_argument('--dsh-profile', choices=('web','desktop'), help='select dsh Web or Desktop')
     ap.add_argument('--chat', action='store_true', help='open the command window')
     args = ap.parse_args()
     if args.scale is not None and (not math.isfinite(args.scale) or not 0.5 <= args.scale <= 2.0):
@@ -1373,7 +1449,7 @@ def main():
         socket = QLocalSocket(app)
         socket.connectToServer(name)
         if socket.waitForConnected(300):
-            socket.write((json.dumps({'mode':args.mode, 'chat':args.chat}) + '\n').encode('utf-8'))
+            socket.write((json.dumps({'mode':args.mode, 'chat':args.chat, 'dsh_profile':args.dsh_profile}) + '\n').encode('utf-8'))
             socket.waitForBytesWritten(300)
             socket.disconnectFromServer()
             return 0
@@ -1397,7 +1473,7 @@ def main():
     pet = Pet(sp, scale, args.selftest, preferences)
     if not args.selftest:
         from dsh_companion import PetCompanion
-        pet._assistant = PetCompanion(pet, args.data_dir or os.path.join(base, 'userdata'), saved, args.mode)
+        pet._assistant = PetCompanion(pet, args.data_dir or os.path.join(base, 'userdata'), saved, args.mode, args.dsh_profile)
         app.aboutToQuit.connect(pet._assistant.shutdown)
     app.aboutToQuit.connect(pet.save_preferences)
     if preferences:
@@ -1414,6 +1490,8 @@ def main():
                         return
                     try:
                         command = json.loads(bytes(client.readLine()).decode('utf-8'))
+                        if command.get('dsh_profile'):
+                            pet._assistant.set_dsh_profile(command['dsh_profile'])
                         if command.get('mode'):
                             pet._assistant.set_mode(command['mode'])
                         if command.get('chat'):
@@ -1660,7 +1738,7 @@ def run_selftest(app, pet, out):
         (70.6, lambda: pet.interact('praise'), 'praised_shy', dict(bubble=True)),   # Interact menu
         (76.0, lambda: None, 'tsun_proud', dict(bubble=True)),
         (80.6, lambda: None, 'idle', {}),
-        (80.8, lambda: pet.interact('feed'), 'eat_taiyaki', dict(bubble=True)),
+        (80.8, lambda: (setattr(pet, 'hunger', 0.1), pet.interact('feed')), 'eat_taiyaki', dict(bubble=True)),  # not full yet: taiyaki -> happy
         (86.2, lambda: None, 'happy', {}),
         (87.4, lambda: None, 'idle', {}),
         (87.6, lambda: pet.interact('cookie'), 'gift_cookie', dict(bubble=True)),
@@ -1712,7 +1790,7 @@ def run_selftest(app, pet, out):
          dict(say='干饭！', check=('fed rice: hunger full, beg streak reset', lambda: pet.hunger > 0.999 and pet.beg_ignored == 0))),
         (154.2, lambda: None, 'ds_rice_slurp', dict(section=True)),                  # slurping
         (155.5, lambda: None, 'ds_rice_slurp', dict(say='嗝～')),                    # burp
-        (157.1, lambda: None, 'happy|dance', {}),                                    # -> happy jump or dance
+        (157.1, lambda: None, 'ds_full_belly', {}),                                # full after rice -> rub tummy
         (161.0, lambda: pet.set_state('idle'), 'idle', {}),
         (161.2, lambda: beg_ignored_setup(BEG_IGNORE_SULK - 1, 10), 'ds_beg_rice', {}),   # 3rd ignored beg...
         (161.5, lambda: beg_hold(1.0), 'ds_beg_rice', {}),

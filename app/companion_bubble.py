@@ -1,4 +1,4 @@
-"""A readable reply bubble, anchored beside the pet's single input."""
+"""A readable reply bubble that follows the pet independently of the input."""
 import time
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtWidgets import QDialog, QLabel, QVBoxLayout
@@ -17,7 +17,7 @@ class ReplyBubble(QDialog):
         self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.label.setStyleSheet('QLabel {color:#315576; background:rgba(241,248,255,238); '
                                  'border:1px solid rgba(177,210,236,150); border-radius:14px; '
-                                 'padding:13px 16px; font-size:13px;}')
+                                 'padding:13px 16px; font-size:17px;}')
         layout = QVBoxLayout(self); layout.setContentsMargins(0,0,0,0); layout.addWidget(self.label)
         self.setFixedWidth(340)
         self.deadline = 0
@@ -34,13 +34,12 @@ class ReplyBubble(QDialog):
     def anchor(self):
         pet = self.companion.pet
         area = pet._screen_rect()
-        window = self.companion.window
-        reference = window.geometry() if window and window.isVisible() else pet.geometry()
+        reference = pet.reply_anchor_rect()
         x = max(area.left(), min(reference.center().x()-self.width()//2, area.right()+1-self.width()))
         y = reference.top()-self.height()-8
         if y < area.top():
             y = min(area.bottom()+1-self.height(), reference.bottom()+8)
-        self.move(x,max(area.top(),y))
+        self.move(x,max(area.top(),min(y,area.bottom()+1-self.height())))
 
     def tick(self):
         pet = self.companion.pet

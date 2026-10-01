@@ -11,19 +11,21 @@ class Rule:
     cooldown: float = 60.0
     family: str = ''
 
-IDLE_GAP = (11.0, 21.0)
-WALK_GAP = (60.0, 110.0)
-FIRST_IDLE_GAP = (7.0, 12.0)
+IDLE_GAP = (7.0, 13.0)
+WALK_GAP = (50.0, 85.0)
+FIRST_IDLE_GAP = (4.0, 8.0)
+WORK_ROTATION_GAP = (10.0, 18.0)
 
 IDLE_RULES = (
-    Rule('wave',1,60), Rule('stretch',1,75), Rule('curtsy',.9,75),
-    Rule('tea',.8,75,'tea'), Rule('curious',1,60), Rule('dance',.7,100),
-    Rule('sit',.8,85), Rule('tsun_proud',.7,100), Rule('tsun_peek',.7,75),
-    Rule('idle_tea',.8,100,'tea'), Rule('idle_fishing',.55,150),
-    Rule('idle_butterfly',.7,100), Rule('ds_basin',.4,200),
+    Rule('wave',1,45), Rule('stretch',1,60), Rule('curtsy',.9,60),
+    Rule('tea',.8,60,'tea'), Rule('curious',1,45), Rule('dance',.7,75),
+    Rule('sit',.8,65), Rule('tsun_proud',.7,75), Rule('tsun_peek',.7,55),
+    Rule('idle_tea',.8,75,'tea'), Rule('idle_fishing',.55,120),
+    Rule('idle_butterfly',.7,75), Rule('ds_basin',.4,150),
+    Rule('swim',.8,95),
 )
 WORK_POOLS = {
-    'thinking': (Rule('dsh_thinking',3,0), Rule('curious',1,35)),
+    'thinking': (Rule('dsh_thinking_once',1,0),),
     'coding': (Rule('dsh_typing',1,0),),
     'reading': (Rule('curious',2,0), Rule('expr_neutral',1,25)),
     'searching': (Rule('curious',2,0), Rule('expr_neutral',1,25)),

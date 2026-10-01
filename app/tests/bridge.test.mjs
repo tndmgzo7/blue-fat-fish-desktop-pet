@@ -4,6 +4,30 @@ import {mkdtemp, readFile, rm} from 'node:fs/promises';
 import {dirname, resolve, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createBridge} from '../dsh_plugin/index.mjs';
+
+test('Web and Desktop share a directory without overwriting each other', async()=>{
+  const root=dirname(fileURLToPath(import.meta.url));
+  const folder=await mkdtemp(resolve(root,'bridge-test-'));
+  let web, desktop;
+  const api={async list(){return {items:[]}}};
+  try {
+    web=await createBridge(api,{profile:'web',dataDir:folder});
+    desktop=await createBridge(api,{profile:'desktop',dataDir:folder});
+    const w=JSON.parse(await readFile(web.dataFile,'utf8'));
+    const d=JSON.parse(await readFile(desktop.dataFile,'utf8'));
+    assert.equal(w.profile,'web'); assert.equal(d.profile,'desktop'); assert.notEqual(w.token,d.token);
+    assert.notEqual(w.url,d.url);
+    const result=await fetch(w.url+'/health',{headers:{Authorization:'Bearer '+w.token}});
+    assert.equal((await result.json()).profile,'web');
+    await web.close();
+    assert.equal(JSON.parse(await readFile(desktop.dataFile,'utf8')).token,d.token);
+    assert.equal((await fetch(d.url+'/health',{headers:{Authorization:'Bearer '+w.token}})).status,401);
+  } finally {
+    await web?.close(); await desktop?.close();
+    if (!resolve(folder).startsWith(resolve(root)+sep)) throw new Error('Unsafe cleanup path');
+    await rm(folder,{recursive:true,force:true});
+  }
+});
 test('authenticated bridge, delivery, stream and cleanup', async () => {
   const root = dirname(fileURLToPath(import.meta.url));
   const folder = await mkdtemp(resolve(root, 'bridge-test-'));

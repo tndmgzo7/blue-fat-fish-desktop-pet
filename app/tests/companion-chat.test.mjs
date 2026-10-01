@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {CompanionChat,taskView,taskTool,buildContext,LIMITS} from '../dsh_plugin/companion-chat.mjs';
+import {CompanionChat,taskView,taskTool,buildContext,LIMITS,readTaskView,toolState,partialChatReply,isClearlyCasual} from '../dsh_plugin/companion-chat.mjs';
 import {createBridge} from '../dsh_plugin/index.mjs';
 import {mkdtemp,readFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -44,7 +44,7 @@ test('chat reads only captured session and calls model without agent loop, think
   const llm=fakeLlm([[{type:'tool-call',id:'t',name:'read_task_progress',arguments:'{}'}],[answer()]]);
   const chat=new CompanionChat({async inspect(id){inspected.push(id);return fixture;},prompt(){throw Error('must not execute');}},
     {llm,agentDefaultModel:defaults,personaFile});
-  const result=await chat.chat({text:'做完了吗',sessionId:'one',history:[]},new AbortController().signal);
+  const result=await chat.chat({text:'能替我看一眼吗',sessionId:'one',history:[]},new AbortController().signal);
   assert.deepEqual(inspected,['one']); assert.deepEqual(result.toolsUsed,['read_task_progress']);
   assert.equal(result.thinking,'off'); assert.equal(llm.requests[0].reasoningEffort,'off');
   assert.equal(llm.requests[0].maxTokens,640); assert.equal(llm.requests[0].sessionId,undefined);
@@ -60,13 +60,162 @@ test('daily chat does not inspect a task; proactive report cannot dispatch',asyn
 });
 
 test('cross-session and unsupported tools are denied, even when model asks',async()=>{
-  let reads=0;
+  const reads=[];
   const llm=fakeLlm([[{type:'tool-call',id:'a',name:'read_task_reply',arguments:'{"sessionId":"other"}'},
     {type:'tool-call',id:'b',name:'bash',arguments:'{}'}],[answer()]]);
-  const chat=new CompanionChat({inspect(){reads++;}}, {llm,agentDefaultModel:defaults,personaFile});
-  await chat.chat({text:'现在怎么样',sessionId:'one'},new AbortController().signal);
-  assert.equal(reads,0); assert.equal(llm.requests[1].messages.filter(m=>m.role==='tool').length,2);
+  const chat=new CompanionChat({inspect(id){reads.push(id);return fixture;}}, {llm,agentDefaultModel:defaults,personaFile});
+  await chat.chat({text:'替我看看',sessionId:'one'},new AbortController().signal);
+  assert.deepEqual(reads,[]); assert.equal(llm.requests[1].messages.filter(m=>m.role==='tool').length,2);
   assert.ok(llm.requests[1].messages.filter(m=>m.role==='tool').every(m=>m.isError));
+});
+
+test('progress is read before the first model request even when no tool is called',async()=>{
+  const reads=[];
+  const ongoing={...fixture,events:[...fixture.events,e(7,'turn/start'),e(8,'user/message',{content:[{type:'text',text:'继续'}]}),
+    e(9,'tool/call',{callId:'real-edit',name:'str_replace_editor',arguments:{command:'str_replace',payload:'SECRET-ARGUMENT'}})]};
+  const llm=fakeLlm([[answer()]]);
+  const chat=new CompanionChat({async inspect(id){reads.push(id);return ongoing;},async list(){return {items:[{sessionId:'one',running:true}]};}},
+    {llm,agentDefaultModel:defaults,personaFile});
+  const result=await chat.chat({text:'任务进度怎么样',sessionId:'one',history:[{role:'assistant',text:'没有任务在跑，我只能看到空白。'}]});
+  assert.deepEqual(reads,['one']);assert.deepEqual(result.toolsUsed,['read_task_progress']);assert.equal(llm.requests.length,1);
+  assert.equal(llm.requests[0].tools,undefined);assert.equal(result.modelCalls,1);
+  const context=llm.requests[0].messages[0].content[0].text;
+  assert.match(context,/"running":true/);assert.match(context,/"state":"coding"/);assert.match(context,/修复显示问题/);
+  assert.doesNotMatch(context,/SECRET-|PRIVATE-/);
+  assert.equal(result.action,'chat');assert.ok(result.contextChars<=LIMITS.inputChars);
+});
+
+test('chat and emotion follow the selected session model rather than the deployment default',async()=>{
+  let inspections=0;
+  const api={async list(){return {items:[{sessionId:'one',projections:{values:{modelSelection:{
+    lastUsed:{provider:'old',model:'old'},next:{provider:'codebuddy',model:'deepseek-v4.1-flash',reasoningEffort:'high'}
+  }}}}]};},inspect(){inspections++;throw Error('model selection must not read harness');}};
+  const llm=fakeLlm([[answer()],[{type:'text',text:'none'}]]);
+  const chat=new CompanionChat(api,{llm,agentDefaultModel:defaults,personaFile});
+  const result=await chat.chat({text:'你好',sessionId:'one'});
+  await chat.emotion('你好',undefined,'one');
+  assert.equal(result.provider,'codebuddy');assert.equal(result.model,'deepseek-v4.1-flash');
+  for(const request of llm.requests){assert.equal(request.provider,'codebuddy');assert.equal(request.model,'deepseek-v4.1-flash');assert.equal(request.reasoningEffort,'off');}
+  assert.equal(inspections,0);
+});
+
+test('bound model lookup reads one current snapshot and closes before agent activation without listing sessions',async()=>{
+  let closed=0,activated=0,reads=0,model='first';
+  const api={list(){throw Error('whole session catalog must not be read');},
+    async *follow(request,signal){
+      reads++;assert.deepEqual(request,{address:{kind:'session',sessionId:'one'},maxMessages:1});
+      assert.equal(signal.aborted,false);
+      try {
+        yield {type:'snapshot',header:{id:'one'},records:[{secret:'PRIVATE-HISTORY'}],projections:{values:{
+          modelSelection:{next:{provider:'codebuddy',model,reasoningEffort:'high'}}}}};
+        activated++;
+      } finally {closed++;}
+    }};
+  const llm=fakeLlm([[answer()],[{type:'text',text:'none'}]]);
+  const chat=new CompanionChat(api,{llm,agentDefaultModel:defaults,personaFile});
+  assert.equal((await chat.chat({text:'你好',sessionId:'one'})).model,'first');
+  model='second';await chat.emotion('我很好奇',undefined,'one');
+  assert.equal(llm.requests[1].model,'second');
+  assert.equal(reads,2);assert.equal(closed,2);assert.equal(activated,0);
+  assert.doesNotMatch(JSON.stringify(llm.requests),/PRIVATE-HISTORY/);
+});
+
+test('empty or mismatched snapshot never falls back to a different session model',async()=>{
+  for(const frame of [null,{type:'snapshot',header:{id:'other'}}]) {
+    let closed=0;
+    const api={list(){throw Error('must not fall back');},async *follow(){try {if(frame)yield frame;}finally{closed++;}}};
+    const llm=fakeLlm([[answer()]]),chat=new CompanionChat(api,{llm,agentDefaultModel:defaults,personaFile});
+    await assert.rejects(chat.chat({text:'你好',sessionId:'one'}),/会话/);
+    assert.equal(closed,1);assert.equal(llm.requests.length,0);
+  }
+});
+
+test('no bound session uses the default; failure to find a bound session never switches silently',async()=>{
+  const llm=fakeLlm([[answer()]]);
+  const chat=new CompanionChat({async list(){return {items:[]};}},{llm,agentDefaultModel:defaults,personaFile});
+  assert.equal((await chat.chat({text:'你好'})).provider,'deepseek-account');
+  await assert.rejects(chat.chat({text:'你好',sessionId:'missing'}),/会话.*模型/);
+  assert.equal(llm.requests.length,1);
+});
+
+test('clearly casual chat uses a smaller read-only context while work and references retain the full path',async()=>{
+  for(const text of ['今天想吃什么？用一句话回答。','你好呀','你是谁','我们聊聊天吧']) assert.equal(isClearlyCasual({text}),true,text);
+  for(const text of ['你好，帮我修复文件','你是谁，统计一下项目数据','今天想吃什么，生成一个菜单文件','你上次说的是什么','任务进度怎么样'])
+    assert.equal(isClearlyCasual({text}),false,text);
+  const history=Array.from({length:12},(_,i)=>({role:i%2?'assistant':'user',text:'日常记录'.repeat(120)}));
+  const llm=fakeLlm([[answer('task')]]);
+  const chat=new CompanionChat({inspect(){throw Error('casual chat must not read task');}}, {llm,agentDefaultModel:defaults,personaFile});
+  const result=await chat.chat({text:'今天想吃什么',history,facts:[{key:'称呼',text:'舰长'}]});
+  assert.equal(result.action,'chat');assert.equal(llm.requests[0].tools,undefined);
+  assert.equal(llm.requests[0].maxTokens,LIMITS.dailyMaxTokens);
+  assert.ok(llm.requests[0].messages.length<=8);
+  assert.match(llm.requests[0].messages[0].content[0].text,/舰长/);
+  assert.ok(result.contextChars<4000);
+});
+
+test('stream preview decodes only chat prose and never leaks JSON syntax or incomplete escapes',()=>{
+  const prefix='{"action":"chat","confidence":0.95,"reply":"';
+  assert.equal(partialChatReply(prefix+'主人，'),'主人，');
+  assert.equal(partialChatReply(prefix+'你好\\u'),'你好');
+  assert.equal(partialChatReply(prefix+'你好\\u9c'),'你好');
+  assert.equal(partialChatReply(prefix+'你好\\u9c7c\\n'),'你好鱼\n');
+  assert.equal(partialChatReply(prefix+'你好\\"主人\\""}'),'你好"主人"');
+  assert.equal(partialChatReply('{"action":"task","confidence":0.99,"reply":"准备好了'), '');
+  assert.equal(partialChatReply('{"reply":"你好","action":"chat"}'), '你好');
+  assert.equal(partialChatReply('{"reply":"你好\\'), '你好');
+  assert.equal(partialChatReply('主人，我今天想吃小点心。'), '主人，我今天想吃小点心。');
+  assert.equal(partialChatReply('收到。\n```json\n{"action":"chat"'), '收到。\n');
+  assert.equal(partialChatReply('```json\n{"action":"chat"'), '');
+});
+
+test('HTTP chat preview arrives before generation finishes; no task is dispatched by a preview',async()=>{
+  const folder=await mkdtemp(resolve(tmpdir(),'fish-stream-'));
+  let release,finished=false,mutations=0;
+  const waiting=new Promise(resolve=>{release=resolve;});
+  const llm={async resolveModelInfo(){return {reasoning:{efforts:[{id:'off'}]}};},async *stream(){
+    yield {type:'text-delta',index:0,text:'{"action":"chat","confidence":0.9,"reply":"主人，'};
+    await waiting;finished=true;
+    yield {type:'text-delta',index:0,text:'你好呀。"}'};
+    yield {type:'finish',reason:{kind:'stop'}};
+  }};
+  const api={async list(){return {items:[]};},prompt(){mutations++;}};
+  const bridge=await createBridge(api,{llm,agentDefaultModel:defaults,dataFile:resolve(folder,'connection.json')});
+  try {
+    const record=JSON.parse(await readFile(bridge.dataFile,'utf8'));
+    const response=await fetch(bridge.url+'/chat',{method:'POST',headers:{'Authorization':'Bearer '+record.token,'content-type':'application/json'},
+      body:JSON.stringify({text:'你好',turnId:'preview-turn',stream:true})});
+    assert.match(response.headers.get('content-type'),/ndjson/);
+    const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';
+    async function nextFrame(){
+      while(!buffer.includes('\n')){const {value,done}=await reader.read();assert.equal(done,false);buffer+=decoder.decode(value,{stream:true});}
+      const end=buffer.indexOf('\n'),line=buffer.slice(0,end);buffer=buffer.slice(end+1);return JSON.parse(line);
+    }
+    assert.equal((await nextFrame()).type,'start');
+    const preview=await nextFrame();assert.equal(preview.type,'reply');assert.equal(preview.reply,'主人，');
+    assert.equal(finished,false);assert.equal(mutations,0);
+    release();let result;
+    do {result=await nextFrame();} while(result.type!=='result');
+    assert.equal(result.value.reply,'主人，你好呀。');assert.equal(result.value.action,'chat');assert.equal(mutations,0);
+    await reader.cancel();
+  } finally {release();await bridge.close();await rm(folder,{recursive:true,force:true});}
+});
+
+test('runtime status clears an abandoned thinking turn and never invents completion',async()=>{
+  const open={...fixture,events:[...fixture.events,e(7,'turn/start'),e(8,'tool/call',{callId:'stale',name:'bash'})]};
+  const api={async inspect(){return open;},async list(){return {items:[{sessionId:'one',running:false}]};}};
+  const view=await readTaskView(api,'one');
+  assert.equal(view.running,false);assert.equal(view.state,'idle');assert.equal(view.outcome,'unknown');assert.deepEqual(view.pendingCalls,[]);
+  api.list=async()=>({items:[{sessionId:'one',running:true}]});
+  const live=await readTaskView(api,'one');assert.equal(live.state,'executing');assert.equal(live.pendingTools[0],'bash');
+  assert.equal(toolState('str_replace_editor',{command:'view'}),'reading');
+});
+
+test('failed status reads provide an unavailable snapshot without a false idle assertion',async()=>{
+  const llm=fakeLlm([[answer()]]);
+  const chat=new CompanionChat({async inspect(){throw Error('read unavailable');}}, {llm,agentDefaultModel:defaults,personaFile});
+  await chat.chat({text:'任务进度',sessionId:'one'});
+  const context=llm.requests[0].messages[0].content[0].text;
+  assert.match(context,/"available":false/);assert.match(context,/不能说任务没有运行/);assert.doesNotMatch(context,/"running":false/);
 });
 
 test('bounded context and credential filtering; no silent thinking fallback',async()=>{

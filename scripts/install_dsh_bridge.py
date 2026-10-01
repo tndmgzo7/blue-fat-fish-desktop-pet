@@ -2,15 +2,19 @@
 import argparse
 from datetime import datetime
 import json
+import hashlib
 from pathlib import Path
 import re
 import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--home', required=True)
-parser.add_argument('--profiles', default='desktop')
+parser.add_argument('--profiles', default='desktop,web')
 args = parser.parse_args()
 plugin = Path(__file__).resolve().parents[1] / 'app/dsh_plugin/index.mjs'
+revision = hashlib.sha256(b''.join((plugin.parent / name).read_bytes()
+    for name in ('index.mjs','companion-chat.mjs','persona.md'))).hexdigest()[:16]
+plugin_uri = plugin.as_uri() + '?petBuild=' + revision
 home = Path(args.home).resolve()
 begin, end = '# whale-pet-bridge:begin', '# whale-pet-bridge:end'
 matched = 0
@@ -27,7 +31,7 @@ for profile in args.profiles.split(','):
     value = re.sub(re.escape(begin) + r'.*?' + re.escape(end) + r'\s*', '', original, flags=re.S).rstrip()
     if value.strip() == '[]':
         value = ''
-    row = f'{begin}\n- insert:\n    - id: whale-pet-bridge\n      name: {json.dumps(plugin.as_uri(), ensure_ascii=False)}\n{end}\n'
+    row = f'{begin}\n- insert:\n    - id: whale-pet-bridge\n      name: {json.dumps(plugin_uri, ensure_ascii=False)}\n      config:\n        profile: {profile}\n{end}\n'
     updated = (value + '\n\n' if value else '') + row
     if original == updated:
         print(profile + ': already installed')
@@ -39,4 +43,4 @@ for profile in args.profiles.split(','):
     print(profile + ': bridge row installed (previous profile config backed up)')
 
 if not matched:
-    raise SystemExit('No compatible dsh profile found. Start dsh Desktop once and verify DSH_HOME.')
+    raise SystemExit('No compatible dsh profile found. Start dsh Web or Desktop once and verify DSH_HOME.')

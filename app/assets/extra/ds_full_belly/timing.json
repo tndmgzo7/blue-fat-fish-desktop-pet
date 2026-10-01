@@ -1,0 +1,117 @@
+{
+  "animation": "ds_full_belly",
+  "variants": {
+    "ds_full_belly": "speech bubbles baked in ('嗝…好撑' during the first rub, '吃、吃不下了…' during the 'no more' beat)",
+    "ds_full_belly_nobubble": "identical frames without any bubble"
+  },
+  "fps": 10,
+  "frame_ms": 100,
+  "frames": 97,
+  "duration_s": 9.7,
+  "canvas": [
+    256,
+    256
+  ],
+  "baseline_y": 244,
+  "frame_files": "frames/<variant>/00.png .. 96.png (RGBA, 256x256, feet / body contact on y=244)",
+  "strips": "spritesheets/<variant>.png (97 cells of 256x256, left -> right, frame i at x = 256*i)",
+  "sequence_sheet": "previews/ds_full_belly_sheet.png (bubble variant, every frame numbered, loop section highlighted)",
+  "segments": {
+    "stand": {
+      "frames": [
+        0,
+        9
+      ],
+      "seconds": 1.0
+    },
+    "plop": {
+      "frames": [
+        10,
+        19
+      ],
+      "seconds": 1.0
+    },
+    "settle": {
+      "frames": [
+        20,
+        29
+      ],
+      "seconds": 1.0
+    },
+    "rub": {
+      "frames": [
+        30,
+        49
+      ],
+      "seconds": 2.0
+    },
+    "no_more": {
+      "frames": [
+        50,
+        64
+      ],
+      "seconds": 1.5
+    },
+    "rub_loop": {
+      "frames": [
+        65,
+        76
+      ],
+      "seconds": 1.2
+    },
+    "doze": {
+      "frames": [
+        77,
+        96
+      ],
+      "seconds": 2.0
+    }
+  },
+  "loop_section": {
+    "start": 65,
+    "end_exclusive": 97,
+    "frames": 32,
+    "seconds": 3.2,
+    "note": "play 0..96 once, then repeat 65..96 (rub + doze) as long as she stays full; there is no exit part (leave with a hard cut to idle / sit / stand)"
+  },
+  "speak": {
+    "line": "吃、吃不下了…",
+    "frames": [
+      51,
+      64
+    ],
+    "note": "the line is spoken in the 'no more' beat; for an app-drawn bubble show it over these frames"
+  },
+  "bubbles": {
+    "burp": {
+      "text": "嗝…好撑",
+      "frames": [
+        35,
+        44
+      ],
+      "box_xyxy": [
+        77,
+        57,
+        137,
+        85
+      ]
+    },
+    "no_more": {
+      "text": "吃、吃不下了…",
+      "frames": [
+        51,
+        64
+      ],
+      "box_xyxy": [
+        51,
+        54,
+        147,
+        82
+      ]
+    }
+  },
+  "gifs": {
+    "ds_full_belly": "previews/ds_full_belly.gif (intro once + loop section 2x)",
+    "ds_full_belly_nobubble": "previews/ds_full_belly_nobubble.gif (intro once + loop section 2x)"
+  }
+}

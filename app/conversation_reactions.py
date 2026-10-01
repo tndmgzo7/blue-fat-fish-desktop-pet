@@ -7,7 +7,7 @@ class Reaction:
     state: str
     length: float = 0.0
     animation: str | None = None
-    cooldown: float = 8.0
+    cooldown: float = 6.0
 
 # Model output is a semantic label, never a free-form animation or command.
 REACTIONS = {
@@ -22,17 +22,27 @@ REACTIONS = {
     'greeting': Reaction('wave', 2.4),
     'grateful': Reaction('curtsy'),
     'petting': Reaction('petted', 2.0),
-    'tail': Reaction('ds_tail_touch', cooldown=18.0),
-    'dance': Reaction('dance', 3.0, cooldown=12.0),
-    'tea': Reaction('tea', 4.0, cooldown=12.0),
-    'stretch': Reaction('stretch', cooldown=12.0),
-    'gift': Reaction('gift_cookie', 2.4, cooldown=12.0),
+    'tail': Reaction('ds_tail_touch', cooldown=15.0),
+    'dance': Reaction('dance', 3.0, cooldown=10.0),
+    'tea': Reaction('tea', 4.0, cooldown=10.0),
+    'stretch': Reaction('stretch', cooldown=10.0),
+    'gift': Reaction('gift_cookie', 2.4, cooldown=10.0),
     'peek': Reaction('tsun_peek', 2.2),
     'cry': Reaction('sad', 3.0),
 }
 
 # Work instructions and quoted/reported dialogue need the model's judgement.
 WORK_WORDS = r'修复|修改|创建|代码|脚本|文件|程序|测试|构建|搜索|配置|打包|日志|命令|提交|翻译|总结|分析|台词|句子|关键词|分类|触发|表情|动画|例如|比如|他说|她说|别人|骂我'
+
+def is_neutral_chat(text):
+    """Skip a second inference only for whole, clearly neutral questions."""
+    text = text.strip()
+    if text.startswith('/聊 '): text = text[3:].strip()
+    text = re.sub(r'[\s，,。.!！?？；;]', '', text)
+    text = re.sub(r'(?:请)?用一句话回答$', '', text)
+    return bool(re.fullmatch(
+        r'(?:你是谁|你叫什么(?:名字)?|今天(?:是)?星期几|现在(?:是)?几点|'
+        r'(?:今天|今晚|早上|中午|晚上)?(?:想吃什么|吃什么|想喝什么))', text))
 
 def keyword_reaction(text):
     """Only obvious live conversation; ambiguity goes to the chat model."""

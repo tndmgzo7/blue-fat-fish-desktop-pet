@@ -1,6 +1,6 @@
 {
   "name": "blue-fat-fish",
-  "version": "2026.09.30",
+  "version": "2026.10.01",
   "kind": "source",
   "files": [
     {
@@ -15,13 +15,13 @@
     },
     {
       "path": "ASSETS.md",
-      "bytes": 778,
-      "sha256": "b886f14cd889dca0d6c6cf9f23020091a7fbea23f1392e64514ae7c07a9f9a6b"
+      "bytes": 1020,
+      "sha256": "0845fc391747b9e023026173eea338a06f7abd404d59bca74547be63ef088c98"
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 1225,
-      "sha256": "8cd932bad11f426b1fcdd57447bf2c359c67b13568b572a7034520a6a82575fd"
+      "bytes": 2125,
+      "sha256": "87b24e24a86454ac4cd9bb72ce9f3b84cc86b5cd6bbce3356a5650951228ca48"
     },
     {
       "path": "LICENSE",
@@ -30,23 +30,23 @@
     },
     {
       "path": "LICENSE-ART",
-      "bytes": 2027,
-      "sha256": "567590416a2f391a83e0c1453488f59ec455f0999067dcb9712095f5e0344349"
+      "bytes": 2101,
+      "sha256": "a0a53128510f77601d10405a265cea702e77c3d4e60a407d09cc9a25ca41838f"
     },
     {
       "path": "README.md",
-      "bytes": 6966,
-      "sha256": "8eda37c74466480a7664b2a17ce7c411424efc17bb9fd88834297e3cc57de4ad"
+      "bytes": 7931,
+      "sha256": "a73cd6317a0bc08af5d9485b68bc955dbcd50e13a04e51dcde846b5bbbb10862"
     },
     {
       "path": "VERSION",
       "bytes": 11,
-      "sha256": "52c44adc9f64d02959032d3ec0e4f623c395bd2d89e84c0c3562e0a086724214"
+      "sha256": "c40a8eeca3b26c0d19c9ae2b2c445a52d247469abfcc6773bb72bbe800054df9"
     },
     {
       "path": "app/animation_policy.py",
-      "bytes": 5567,
-      "sha256": "7f247da5d0491d3aa1f5fe4c906b151c7fa79c3422de50be14b9c89b65769b1f"
+      "bytes": 5601,
+      "sha256": "2765cdda8fd0bd81a684bf88408532436e466c428994f17fb967383e748dd627"
     },
     {
       "path": "app/assets/atlas.json",
@@ -67,6 +67,11 @@
       "path": "app/assets/atlas_3.png",
       "bytes": 5317329,
       "sha256": "bd5198868bfe652db8f931ac39359040234e2b236944835e559544ae51569e74"
+    },
+    {
+      "path": "app/assets/extra/additions.json",
+      "bytes": 23078,
+      "sha256": "961484dde167535daae261d6a2aacf28593dd991112b0d8f07225f8b0c3b5339"
     },
     {
       "path": "app/assets/extra/ds_code_eureka/00.png",
@@ -454,6 +459,1306 @@
       "sha256": "37c4f512695dbc19f4f10358c30e22e584ca4c153889ec1ffec508b4f95ae71e"
     },
     {
+      "path": "app/assets/extra/ds_full_belly/timing.json",
+      "bytes": 2429,
+      "sha256": "0e43cbcde66902e29a14c23c41477b706e8cabb1d4e5b8a3f07090a87fb1d804"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/00.png",
+      "bytes": 46892,
+      "sha256": "ea428e4a671470ed5f679fef68ab726e71ed6f2d7f1905640ae2fdf909a47989"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/01.png",
+      "bytes": 48685,
+      "sha256": "647544a2cea3045433dca96cc0b719429c02dede5aed5ef38f8fe92224614854"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/02.png",
+      "bytes": 47760,
+      "sha256": "e2b6fe466b1a69e331eb0a8ace3c8213d4dc407f049f2c297d035da1f53df5c1"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/03.png",
+      "bytes": 47723,
+      "sha256": "41de5a3a430807496d71638b741b8f3d8ecd64a0cc7071b07add9a8b74018f26"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/04.png",
+      "bytes": 47985,
+      "sha256": "2b07c6d06cf216003aa01a4022fac1808759ed657583bfab180a91d4433e69ed"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/05.png",
+      "bytes": 47981,
+      "sha256": "271a254ddd92f6a028be21b1bfdcd6de01621ea05994b8ed66548edec88b6a9e"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/06.png",
+      "bytes": 47971,
+      "sha256": "ae2a219170001763d2a8e192f1b4515212adbc4618ffbb0c89eba5506c0fc721"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/07.png",
+      "bytes": 47802,
+      "sha256": "326c4e1aa586b927c60a5946ae0eb228905fc1f458577c0c9ea69ef1c7c1d76a"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/08.png",
+      "bytes": 47748,
+      "sha256": "eeb7520045c70cca422713976c56cfa8acfe4bae7381644acc704e939c796574"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/09.png",
+      "bytes": 47629,
+      "sha256": "6d6a0cf3e774e0bfb0a858016876bd56514608d97f2bb56ccfb8350431869599"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/10.png",
+      "bytes": 47368,
+      "sha256": "3819e9620223fad4cab64269950cd9e24d926a253a65dceda09eeced1258887d"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/11.png",
+      "bytes": 50351,
+      "sha256": "b062103b9762caf1048446c2abe1d11ef77cd6db835dc01665f295e9b90040ac"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/12.png",
+      "bytes": 50047,
+      "sha256": "d334d09314dab47da1b4a223731070e1e7bcdaa4d579b545725e32d2626b6589"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/13.png",
+      "bytes": 49971,
+      "sha256": "123e50980a47b9c93f6ae251c2a513575f87b3b2bf4a0d7cc018dd612c2f68d2"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/14.png",
+      "bytes": 48501,
+      "sha256": "91c1a7012f3c6ca767ea6991ead3b78c5c40dd96cfa0fca5ac638ce1b0df36c1"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/15.png",
+      "bytes": 48359,
+      "sha256": "533814ab27cc1a218011a014fb7cd0f53c3f146430d4e1b7849de5ff7a658c69"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/16.png",
+      "bytes": 48501,
+      "sha256": "91c1a7012f3c6ca767ea6991ead3b78c5c40dd96cfa0fca5ac638ce1b0df36c1"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/17.png",
+      "bytes": 48622,
+      "sha256": "a4d8d8407d05b214f6b832d1515a7efb8f8325c39d6aa47bf6e174116961a8ad"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/18.png",
+      "bytes": 48320,
+      "sha256": "da2ae07ba81865ebadf6e3e0067a7b7f7c574bac13fd50600e5074045421e5a2"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/19.png",
+      "bytes": 48044,
+      "sha256": "dcc875381257119c2ac8336653bfd5e514e995aef9ab16b5f13b6e8bb0fcdd65"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/20.png",
+      "bytes": 51477,
+      "sha256": "cd283c3b0741c902d85599934a74425005b15fe08a0f4340fece06c261424a9a"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/21.png",
+      "bytes": 53957,
+      "sha256": "400873bde28d524cf71ecf0131199ab9c4166d9a45df03c35342606ef666b5ba"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/22.png",
+      "bytes": 53614,
+      "sha256": "a00bd80f9da92ece0bdecfc725448b8a6ff206c650dbf62cbd7eb27ed4b429c8"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/23.png",
+      "bytes": 52329,
+      "sha256": "57b7e610ac94d7835ce7948fa6ca2fd5f9e166d723918c88aefca866518f8a07"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/24.png",
+      "bytes": 52189,
+      "sha256": "b6f83fb3207e73dd8f3d5db82cb624be2b6d9722a580e8b11ef14faf080e2fa0"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/25.png",
+      "bytes": 52434,
+      "sha256": "886c478ed3d609b0fcf3b0315857e9f9456bc6e1200ae9d80128cd842fd29ebf"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/26.png",
+      "bytes": 52481,
+      "sha256": "59e9e0640000c942887db04ef1eb83dbd5d82dd4758364542a6b4f91b4c8cd4e"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/27.png",
+      "bytes": 52481,
+      "sha256": "59e9e0640000c942887db04ef1eb83dbd5d82dd4758364542a6b4f91b4c8cd4e"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/28.png",
+      "bytes": 52434,
+      "sha256": "886c478ed3d609b0fcf3b0315857e9f9456bc6e1200ae9d80128cd842fd29ebf"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/29.png",
+      "bytes": 52189,
+      "sha256": "b6f83fb3207e73dd8f3d5db82cb624be2b6d9722a580e8b11ef14faf080e2fa0"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/30.png",
+      "bytes": 50380,
+      "sha256": "37d32d244618c6b028492325186c6e7dfb523af8c13a6af4c1eb29d1abdcbc22"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/31.png",
+      "bytes": 52141,
+      "sha256": "712064dcbc1d67918917aed8669d5bd6856ba3728de0f9a23bbde7f20cae5e55"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/32.png",
+      "bytes": 51446,
+      "sha256": "0590f1c4e28c788dd060365b5d3fe266f81812be0ea846744f554eb6160932ad"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/33.png",
+      "bytes": 51725,
+      "sha256": "d24deba4beab7afb1467f2eaa18de688702a08c5cc82457148b5fa10d8d5ca46"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/34.png",
+      "bytes": 51985,
+      "sha256": "3b67acd23250f91bf1fe94d4cc5a4a5036997a00962e98bd64aa531627ff180a"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/35.png",
+      "bytes": 51713,
+      "sha256": "12cce66967d578bc38e9c6923ffb2776333ae96ea69efcd867a3498920370eeb"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/36.png",
+      "bytes": 51587,
+      "sha256": "9e2916c7f86736609ed6f7ab2e978de99ec1230c0e01939887aaa68ca93e174e"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/37.png",
+      "bytes": 51663,
+      "sha256": "1b883d9cbaf478676f446e7c2a5b6099445d48f7ed55a5dd1b4ebc9af4af264c"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/38.png",
+      "bytes": 52068,
+      "sha256": "c0ae149a59d0128efd5554c3d37547b919e4a42fc3650c0ba811857b73a24e41"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/39.png",
+      "bytes": 51913,
+      "sha256": "c377fa02ebbe2d75125f720212cfdc1bb85efa559102cb7f92458e526baa6ac2"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/40.png",
+      "bytes": 51784,
+      "sha256": "6fd97aedf35bebaa166ee9a0df21e906eb1a9a1a82012b7647fef0f9b9b2edfe"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/41.png",
+      "bytes": 51750,
+      "sha256": "0cbee50f01b8ba1a411dca5d9f5f4083fe9a0b5a5ad58b175e8073e423910b5a"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/42.png",
+      "bytes": 51831,
+      "sha256": "751168489463f113b06050d37d3eb722f7aa1aaf804b92e7a1450691cc82be3f"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/43.png",
+      "bytes": 51873,
+      "sha256": "af37f74d5cf4a0f9f48599ea4cec6e6d38169a4c841e441e423ef73089416522"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/44.png",
+      "bytes": 51677,
+      "sha256": "5207ecaf48be8eeb410ef4ae41adb1badb2659f731d502308f5769f9a0a3800e"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/45.png",
+      "bytes": 51542,
+      "sha256": "04f342d4955b2beac5cf62c1f605c350a40f82b68f0ef1194a5cbd30bb0806b8"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/46.png",
+      "bytes": 51484,
+      "sha256": "0119ae91779c9a6b109a6c845c092e703c642f25020f9629aa21171b80244ebb"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/47.png",
+      "bytes": 51731,
+      "sha256": "35a6ee3901ec1a250f990cef2cb5ffb6bf1278af1e6e22546d337169ef0d31c4"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/48.png",
+      "bytes": 51486,
+      "sha256": "38804d2fdfd5e06ab4603f9a9ca358f364baa9e550b27267d547a0d2f626b3c6"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/49.png",
+      "bytes": 51399,
+      "sha256": "ce7992acf1eca2f0f69992324f3f74c229910731b61a4be22b1039477d8b1485"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/50.png",
+      "bytes": 53147,
+      "sha256": "6cb8bb202a79288e61099c99b8c8c5a230e61481cccd4c22d6a4733542f7fb90"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/51.png",
+      "bytes": 55414,
+      "sha256": "0c68347cf3ee2845742307e9c56ad366010bb5eb4b4483f4762e5e9dbd0bf64c"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/52.png",
+      "bytes": 54820,
+      "sha256": "01fc8959823e53ca6935bfd8f89c3177bfcedb0a5e71e1736428f69a741b7b31"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/53.png",
+      "bytes": 54810,
+      "sha256": "987b6b79d5a43235eb4bc5fa90b5f51a5f88228c64b8b530ad2dd45ea1184de5"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/54.png",
+      "bytes": 55079,
+      "sha256": "264bd6feb9fb0c99e930407752eb82a5a0b03105d05d6aa7432830e6c23e9d76"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/55.png",
+      "bytes": 55086,
+      "sha256": "a67c340a0eee06e84aa4652b40a582dac9a51e72b3d11ed6e0cd770983910a40"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/56.png",
+      "bytes": 54932,
+      "sha256": "ba5239e923393a0f456492543b01d5805fc990af2ba32cc3509c9b0dfbc37bc8"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/57.png",
+      "bytes": 54838,
+      "sha256": "d5afe0d8945bb1fbecb50a91c818e60b0b191f163edcf69d91c23ddb8c9e0185"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/58.png",
+      "bytes": 54848,
+      "sha256": "a0b987948fed0af4002b2e4477cc81099cd85262dcbaab27514e85acefd26ae3"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/59.png",
+      "bytes": 54765,
+      "sha256": "946521a8adc0e2b0f7e5814c4b8c65812ce8c34a232adc60edc7cd00c3a60910"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/60.png",
+      "bytes": 54976,
+      "sha256": "a2cbe0242a894164941c843559b16904f1ab8ecbc9d397276330655b524e12c9"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/61.png",
+      "bytes": 54707,
+      "sha256": "4d968f7bb7adece2007b7d8114e225735eda68c6b0fdc0127ae4b098e56c6d0b"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/62.png",
+      "bytes": 54798,
+      "sha256": "88aecf309401278b5bf661fd9f309d8a3610f3d9d84bef13cfa773bfb4f48a6f"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/63.png",
+      "bytes": 54705,
+      "sha256": "5a0998906e375fda20490481a9fd30f304c4926747444224c5078fa5c256d6fe"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/64.png",
+      "bytes": 54794,
+      "sha256": "6e5d1c80748ec193a93d5f21ad88bb024fa2d4022679523d61a04760cec54797"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/65.png",
+      "bytes": 50242,
+      "sha256": "7b4c9401a78df0e6bc850cd30889cd8f1422a146c0246e25f1a083677c3b745f"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/66.png",
+      "bytes": 51979,
+      "sha256": "b47cd36239f5c95fb596490efc9a39581c422036208312eda3ee38fe30bcdf74"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/67.png",
+      "bytes": 51446,
+      "sha256": "0590f1c4e28c788dd060365b5d3fe266f81812be0ea846744f554eb6160932ad"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/68.png",
+      "bytes": 51725,
+      "sha256": "d24deba4beab7afb1467f2eaa18de688702a08c5cc82457148b5fa10d8d5ca46"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/69.png",
+      "bytes": 51985,
+      "sha256": "3b67acd23250f91bf1fe94d4cc5a4a5036997a00962e98bd64aa531627ff180a"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/70.png",
+      "bytes": 51713,
+      "sha256": "12cce66967d578bc38e9c6923ffb2776333ae96ea69efcd867a3498920370eeb"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/71.png",
+      "bytes": 51587,
+      "sha256": "9e2916c7f86736609ed6f7ab2e978de99ec1230c0e01939887aaa68ca93e174e"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/72.png",
+      "bytes": 51663,
+      "sha256": "1b883d9cbaf478676f446e7c2a5b6099445d48f7ed55a5dd1b4ebc9af4af264c"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/73.png",
+      "bytes": 52068,
+      "sha256": "c0ae149a59d0128efd5554c3d37547b919e4a42fc3650c0ba811857b73a24e41"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/74.png",
+      "bytes": 51913,
+      "sha256": "c377fa02ebbe2d75125f720212cfdc1bb85efa559102cb7f92458e526baa6ac2"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/75.png",
+      "bytes": 51784,
+      "sha256": "6fd97aedf35bebaa166ee9a0df21e906eb1a9a1a82012b7647fef0f9b9b2edfe"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/76.png",
+      "bytes": 51750,
+      "sha256": "0cbee50f01b8ba1a411dca5d9f5f4083fe9a0b5a5ad58b175e8073e423910b5a"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/77.png",
+      "bytes": 52482,
+      "sha256": "c3a3a2bc9b188f1c9b49156c21e4707f880d468b2647fe719d0df501a57a279b"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/78.png",
+      "bytes": 54273,
+      "sha256": "f21ab64e3661d494e6d93600e818b3b35676c2ed9df61f8aba4bf41661e40bb1"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/79.png",
+      "bytes": 53837,
+      "sha256": "814b0a7f5da3bcc5abc152d4efae802c24929f450499b8e2a6d8290fd08410b1"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/80.png",
+      "bytes": 54159,
+      "sha256": "9ea91602c43260dd26ee11919877633e0c84811661c78b2028b4676ef1da5fa5"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/81.png",
+      "bytes": 54280,
+      "sha256": "3e64f3f5b5ad8d6f85f096f7ffe8bdd2c4ae89db623e60cb189ada568c2b5a33"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/82.png",
+      "bytes": 54181,
+      "sha256": "a7d17fb055dc2c3d0ee2c5ccf821739e61355409c43c4617046d3547228cc4f1"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/83.png",
+      "bytes": 54265,
+      "sha256": "e3aa057b2910f257dfb834c4def77a41bae5f9404f84162c7dfb6117e3714f98"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/84.png",
+      "bytes": 54282,
+      "sha256": "46376ffd7a245065d132dbbf551049d3a26c12d0c21dbd31c88d88b29f23f295"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/85.png",
+      "bytes": 54376,
+      "sha256": "f0bc4e46d45a3cfe3c2c1fca5c3d695c6bdb101f16486549886bdbd209711424"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/86.png",
+      "bytes": 54382,
+      "sha256": "b23ff27e649ae7cbc4915d950905de18a2d281caddb4b8a8336d81fe97e4da2a"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/87.png",
+      "bytes": 53751,
+      "sha256": "0958afae11c2281d27767e5d131529b39b7dd3826d4639b364f4e4f1ee1374a2"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/88.png",
+      "bytes": 54164,
+      "sha256": "156f37ea83c0231c884006cfa9a22fc0013f6be931879118b481f690de1cb892"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/89.png",
+      "bytes": 54457,
+      "sha256": "d5795a2317ba3a911c32dc375df68f7fb83bcfd4539b46153ae7bf9457349c9e"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/90.png",
+      "bytes": 54489,
+      "sha256": "a748f61e099b2a5133190388f6e833cf5768a31001c3eb5245af6a2d3cb45a88"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/91.png",
+      "bytes": 54300,
+      "sha256": "95af837347593d864c6a9b5a599f292a1c36f71e2742c2f7527593a222a62f1c"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/92.png",
+      "bytes": 54181,
+      "sha256": "a7d17fb055dc2c3d0ee2c5ccf821739e61355409c43c4617046d3547228cc4f1"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/93.png",
+      "bytes": 54125,
+      "sha256": "b3505a6094cd7da458cbe1a4a80e5668caa1172e66bab4d978f63c10ec36afee"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/94.png",
+      "bytes": 54170,
+      "sha256": "261a1659ba5ae0daa6d89129549afccf622f1803d58991bde639696f346c0792"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/95.png",
+      "bytes": 53994,
+      "sha256": "e4f5cb850ad007da56f914b3f7ff93589a29cbc44f30f34ba3d9c546d32b6d34"
+    },
+    {
+      "path": "app/assets/extra/ds_full_belly_nobubble/96.png",
+      "bytes": 54436,
+      "sha256": "50888fc2238a973bfebcb2a04e83f2c7218eba0690393a024db852359a3e7826"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/00.png",
+      "bytes": 116229,
+      "sha256": "f492a12b7f84aaea25d2f678f32deb284f366fe9daadebed16b00d251ebbe8e1"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/01.png",
+      "bytes": 115888,
+      "sha256": "2953e33d37e2f3ab950b9a0df84d60ba092aa335a518aac461ba3eb77020e186"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/02.png",
+      "bytes": 116142,
+      "sha256": "ad8333bb3ef4579386a7d71699f53f035a86fe5abbcec78c35f237d7ed438e2a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/03.png",
+      "bytes": 116655,
+      "sha256": "8d9254bcfb767679e2fce4aa1174c7534c3753a4ceb0d7f04dbe052428b3d6f5"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/04.png",
+      "bytes": 116746,
+      "sha256": "0dfdab627c0c2224193863bcd49dad48ff5db599084fe370257e11b7304e27e0"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/05.png",
+      "bytes": 116610,
+      "sha256": "3acbb4dae3ebaf9372c1a70a7fc66113f95ec093048a812c7425154b6c2e299a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/06.png",
+      "bytes": 116777,
+      "sha256": "1538beced2d7299b2cb0a31f81393d2ce2601910e5a059e1a2f3f70a7f113b74"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/07.png",
+      "bytes": 116477,
+      "sha256": "09a4d5988817b7cb000880d9a542efd5ee63c9f96c716a9d302aba6262a019c7"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/08.png",
+      "bytes": 117331,
+      "sha256": "2209f917632b46776e81f04b982a6bb08c55ee43f15f2144d1a542796b7a0416"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/09.png",
+      "bytes": 116686,
+      "sha256": "481d48167a956610dd218d793788784632006b52b5048bf9b18246840b5d3ed2"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/10.png",
+      "bytes": 116988,
+      "sha256": "a6f69dd52c6e4531261af36f94440f0bd9afa4d39468b63bb947d6da0c09c901"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/11.png",
+      "bytes": 117507,
+      "sha256": "776c4faff52405331b11caf21d4ffcf74feedec1b99a7e6d02dbbb7cb935735a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/12.png",
+      "bytes": 118268,
+      "sha256": "af1d1bd00c2dadf36d45120df58edfa29ffe10603ecce8b281ade5fd385233de"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/13.png",
+      "bytes": 118437,
+      "sha256": "d638ec0734b9b573ea49f12a9e1a642a6173f517321ce0687a117e8c0d142945"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/14.png",
+      "bytes": 116746,
+      "sha256": "05d424a68735815e58155a2347b4bd260fc83efec651ad8aaaa63d5e9ac2f146"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/15.png",
+      "bytes": 116695,
+      "sha256": "4f1a7c6f846c284df21f149c706c95e3625a48e1361d25f3c5375c5b5d3a4456"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/16.png",
+      "bytes": 116711,
+      "sha256": "b2dc469e5883c336bc461efd85ab25c0604850ab3736cb9a764e6d1ed9f40fc9"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/17.png",
+      "bytes": 116494,
+      "sha256": "893bebde70689f0dc2ae5ae6917b4a135eaaf335ac9ee3c3e2383aa2bcd41e86"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full/timing.json",
+      "bytes": 5376,
+      "sha256": "48cee9025a0762ec5841ce6145cbc0c521ff9ca849ed7223b282e1b7e0bfe0cd"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/00.png",
+      "bytes": 114615,
+      "sha256": "f8c5d911f147661f40d69597e77bb59f007701fd4936a7901678882b8c14a299"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/01.png",
+      "bytes": 98867,
+      "sha256": "013295ef3360a3596ccad8e25a8c762b27c9073d257fe6cd479f858cf680f88e"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/02.png",
+      "bytes": 105282,
+      "sha256": "324bc8ac111b14fb184a705d67092e778d14887ad147017ca8c9b2b9a020a098"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/03.png",
+      "bytes": 140074,
+      "sha256": "0d13ab845a9faac3a27966f6b85334b7ba75258a08d328923b6705e7be09ce14"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/04.png",
+      "bytes": 146656,
+      "sha256": "540f98a01f38e2a864852353f640b10dd8a1a543695b82c350ccb77fa440d82c"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/05.png",
+      "bytes": 142396,
+      "sha256": "94677d144668df7d6466bad479247c924c897ee40ca3f7741094685fded7fce1"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/06.png",
+      "bytes": 142436,
+      "sha256": "37ee0ce8305a7fd43ec01995b7db988c60af1e0ac0c7641d3c55e90ef18f9874"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/07.png",
+      "bytes": 140508,
+      "sha256": "e50615996ac93bfa44f9498865f563006cbae71535066079761a86d640434e95"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/08.png",
+      "bytes": 140420,
+      "sha256": "ed538bbbcc0ae6d28adc7b9d838cb3e0dbd25125d23191c883f2d0332efee542"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/09.png",
+      "bytes": 120889,
+      "sha256": "db8ba4123a7857d0e59da219c00ad8a63c3e6ced68ff89e9fb3f8c7076302e3e"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/10.png",
+      "bytes": 122202,
+      "sha256": "49c2aab7ab39fc3e9effb898340219e6f78371eed8a06b4d04677473aed457a1"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/11.png",
+      "bytes": 121810,
+      "sha256": "4b9431927b233b5b35da0a4ada33a777c786a05db87d3c60ef85e1a93b7ec984"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/12.png",
+      "bytes": 74007,
+      "sha256": "1d9ce8a1baf6ba12067728e2110e4ec3baf8bab6d415f528568f7279346cbc3a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/13.png",
+      "bytes": 73126,
+      "sha256": "897667203cc1aeaf2968d0d1d09ff68ee9ad7ac6e88e5adebc2e29a547a52ffb"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/14.png",
+      "bytes": 69947,
+      "sha256": "a16f9e70aca3880a81e6f770fd8c15fab502d496e545e4fd6b95890108eadf22"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/15.png",
+      "bytes": 72628,
+      "sha256": "08b8d12c02b79dc752ad80e506d9ecee53a750eb159a83eee3d0b9ff7efd55e3"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/16.png",
+      "bytes": 12243,
+      "sha256": "88cefd90ac1784b15fff9f0408d8a57d3ef0185eac1cf128810e0e669ab8a2e1"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/17.png",
+      "bytes": 10603,
+      "sha256": "9e405e7ddcee037f3310f0f6b344ce59859f52460eb262b81158c8f79381d6bc"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/18.png",
+      "bytes": 11128,
+      "sha256": "58decb345ade551aca33c4e5c5e6e5c8469af8156ae295ec6dc94c8bb75d0620"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap/19.png",
+      "bytes": 115498,
+      "sha256": "074602b216d8e3edb18f82dea9738ea3c2abb664549aaccfeb356654992c6000"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/00.png",
+      "bytes": 116039,
+      "sha256": "a5d9ccfdd1604648ab548a421edb98e66f0062eebcf7e67c2bfa60d79e66fc47"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/01.png",
+      "bytes": 98775,
+      "sha256": "762d0e74306a4b7d619f862f0fe06b65f84937bf38da7ed66148d3a99ecfccd9"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/02.png",
+      "bytes": 105425,
+      "sha256": "62c45c4ea77c821d4b8ab72093cabb2687f7dfa5175ddade4ddaec935a63aeb3"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/03.png",
+      "bytes": 140265,
+      "sha256": "352b93aa0f9f2758fed8f205c7972d9a8bf3ee6d728f075198917bf874d8804a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/04.png",
+      "bytes": 146820,
+      "sha256": "bc74fc6501feb5823297d94ed9675507973cd85432906207158bcc688fb26f14"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/05.png",
+      "bytes": 142562,
+      "sha256": "2839569fc666bfc251138b88629847ba94f7b3896aa26271606155f9fae8c1d7"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/06.png",
+      "bytes": 142554,
+      "sha256": "815df1906d99eee5c04b77587560983f4f5e350e588e7897557f8c95ba418e3b"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/07.png",
+      "bytes": 140571,
+      "sha256": "bb278fcf24121d2593b5561b35d8738d17383b766215a3df6dec319c20f5ac04"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/08.png",
+      "bytes": 140405,
+      "sha256": "4851e9ed7396c095d7dae7b8f6537fa08786d12522263895990b7c6f7647fe43"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/09.png",
+      "bytes": 120971,
+      "sha256": "23faf0f1973d6d858c1140a2c633034ead669bba08d1b1bd203421db588729df"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/10.png",
+      "bytes": 122149,
+      "sha256": "33d844d442c0d2605b393af6d93e3ac8e5cc156425daccc033cab1c9f70eea50"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/11.png",
+      "bytes": 121900,
+      "sha256": "e723f162985484f605f8fbf88513a8ce4f097af8d2a10c8f452f20e4395ddecf"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/12.png",
+      "bytes": 74013,
+      "sha256": "a281ceebb7c5a6bc58e95ec393452affc1add94ba159dbac76e076c5c52c5e40"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/13.png",
+      "bytes": 72937,
+      "sha256": "1136fb25c9d3db7baec77b55de2b129f8b54d984fccb94d2bee8941592e0801c"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/14.png",
+      "bytes": 69652,
+      "sha256": "358c21faed7a735d866fea4d8f0d9c20c767e510d818bb170110af42e7134672"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/15.png",
+      "bytes": 73164,
+      "sha256": "4b3245e0f2c106c3beb8555ca650afce59ad076e5130a89a9aa19eb4fe4691a6"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/16.png",
+      "bytes": 12027,
+      "sha256": "5dbd1a177be8820ec62de6027949e648ec77248768df6842df1ac581b9043899"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/17.png",
+      "bytes": 10575,
+      "sha256": "d573444ceec8ebd1f8fed4a49d11e3e2c2619d29935b3c9bc572c59d90332f48"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/18.png",
+      "bytes": 11282,
+      "sha256": "e8cf172d2eda5d227ef69ae9b1cf0ee520b206d143e5cb82a075d37f408bfbe5"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_leap_left/19.png",
+      "bytes": 116636,
+      "sha256": "6340884edc6842849f80db6f432aca9531614bd84e85ecfc56415b7268055175"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/00.png",
+      "bytes": 116952,
+      "sha256": "47e34444f05b2ce3f41ba473a580f618fe5fc1592867da72b53e1ca92949826d"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/01.png",
+      "bytes": 116782,
+      "sha256": "e99ea4ef13695d0bd4eae0bfa41b553693d3155e23ae94b8d2d1a4bcebf6d2ca"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/02.png",
+      "bytes": 116779,
+      "sha256": "512a2af11b13529a023350b61e0ebc9cb4637844df4b1a37f89817458ed2fb04"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/03.png",
+      "bytes": 117575,
+      "sha256": "6ba04ccaefb497f5c829dfa100603c5a6ad5c822ca58adee24d1cd5e70cd2dc5"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/04.png",
+      "bytes": 116940,
+      "sha256": "a6f75e064c5b88681669e29ca807d463c95ec56af36820d90285ff9efd53dc53"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/05.png",
+      "bytes": 117062,
+      "sha256": "cb7fea3d0399671e7378b03045835f48898ba899bdcf05585666056289987f6e"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/06.png",
+      "bytes": 117188,
+      "sha256": "cc227a5dff418f55c85c66cb133f81d98b3dee954c3a53269c9429a157b40b94"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/07.png",
+      "bytes": 117659,
+      "sha256": "b300f1b5507488b00608c5b7a47086969b366477c62592175d54fb8e8975f25f"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/08.png",
+      "bytes": 118782,
+      "sha256": "017fef7249073e92ca5798b2e6f0e714a3e4bda455a1282622c0afeacc87f22b"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/09.png",
+      "bytes": 117890,
+      "sha256": "f784d732c15977c008d11d3927915bdecd1da0761a18cb7a098a039d99b7a333"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/10.png",
+      "bytes": 118214,
+      "sha256": "447d4901d945d1fda085a2711bed4300bbca029b5dd7928fc9b478ff2ad9232f"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/11.png",
+      "bytes": 118877,
+      "sha256": "20bbdf148a1bd89e45efe04ce7bf046fb2f09af0047f06d0dc171a4524be8655"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/12.png",
+      "bytes": 118776,
+      "sha256": "b7d5b06388d76ba994289ee5cad6b18640a6bfca9f0a8f6611c4c3e1d798cda8"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/13.png",
+      "bytes": 118813,
+      "sha256": "91ee57e54ac1271b54d9131089fec69a007f2430a5b592b896910f0b1c31b651"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/14.png",
+      "bytes": 116828,
+      "sha256": "45b4c29c0a04aa0cb1598f3cff8ee785649b1fafaeb3966129b0447840e8b8c9"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/15.png",
+      "bytes": 116986,
+      "sha256": "73d062502d6f14482a531ede4f16c581be94ed733fa3250e439d2c8e164bb9aa"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/16.png",
+      "bytes": 117257,
+      "sha256": "5ce3d6846673cc5eb2eebc2ee2a879a182c2f37761dd616b2eb389b897b5496a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_left/17.png",
+      "bytes": 117343,
+      "sha256": "27428badee25cd836b2f9ca7055509ea7a3865f5ee65e728d1485213b8ca1bf5"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_turn_to_left/00.png",
+      "bytes": 102714,
+      "sha256": "e74d449ae8604362759b6f95fab29f4d8685a9e3c3114abd72b2827d445b6987"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_turn_to_left/01.png",
+      "bytes": 108466,
+      "sha256": "6a73601d785f93b04babf08ff1d9446824f9d19bb9983e8a5c4d7ac169804c22"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_turn_to_right/00.png",
+      "bytes": 103399,
+      "sha256": "62660b8e2ae83d00dfa43b25489959849e043547e6287db5c85b3aba38c3d65c"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_full_turn_to_right/01.png",
+      "bytes": 107641,
+      "sha256": "0f8185228e5a8418f73ef1bc6552cd232b3e4794ea699c3f0cf299b45f2d33ff"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/00.png",
+      "bytes": 49229,
+      "sha256": "9c74878307de5c83520a051e117357ac3985b9e08ad3b81890962bcb62519663"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/01.png",
+      "bytes": 49062,
+      "sha256": "37b685d4c4dc939380f0b4712f7711d6f62eb7c0a820c4677c0c84824691a4e1"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/02.png",
+      "bytes": 49232,
+      "sha256": "3ea52195d4bf5b7a6a3e8b4e8240ac23b8497edaf11e9868175431b2fbdeb5e2"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/03.png",
+      "bytes": 49610,
+      "sha256": "1da01275927577c2bfc47d6ac71cfe3f88b88213218cb7eb523d45e02b98f9f5"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/04.png",
+      "bytes": 49233,
+      "sha256": "0c7c5286d09a3355216466d53848cce33d6c1b13aeb9ddeb5da28739ae2fd343"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/05.png",
+      "bytes": 49075,
+      "sha256": "845bb05ba4f3c827c6cbd7c810f4f1f5980aa02bb330afb9b5b52dcbe52c8e5c"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/06.png",
+      "bytes": 49527,
+      "sha256": "57ddd79a037a6cf4fbe10d9ec797cb04b71fd8875f08a5d8445db5d2c9f66900"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/07.png",
+      "bytes": 49638,
+      "sha256": "acd98219ecca496f553342e63e6a2a1fea5a1a7201982224c27c376728d06c0f"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/08.png",
+      "bytes": 49818,
+      "sha256": "cfcb5b0fc4f23a5f8acea41fc574f3a9de80641587ef89f6b967b2a27fa52c4d"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/09.png",
+      "bytes": 49559,
+      "sha256": "ea3c1003da2494883c2ca7c959ca1e6060c1de6d289ca338970a4c828945cef2"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/10.png",
+      "bytes": 49447,
+      "sha256": "1e4a0eee4062c4201c3df5d9870fadc6e9cbd53426083c31d8082ce234ab5803"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/11.png",
+      "bytes": 49507,
+      "sha256": "fcc729ae1d87fca2903b0747636670e7dba6bb1f6eeb4d1522de5d675b986a0c"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/12.png",
+      "bytes": 49888,
+      "sha256": "12b0093e287b83744093d1afa70f7a69a111bc5e12fd2c574bba53f5cd053d6a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/13.png",
+      "bytes": 50095,
+      "sha256": "a4976940c9024426543f57ea432ba0ead98aa65ae1b333c896b51919403efd63"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/14.png",
+      "bytes": 49356,
+      "sha256": "6601c47c8c2c7d3603928d6e5821b48293757907061a20b60669cc0900d8141d"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/15.png",
+      "bytes": 49276,
+      "sha256": "e449c1a27508892e1e68ed2ba2d3f941b35e1f3cd2bdc1928da1923fad36c82e"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/16.png",
+      "bytes": 49423,
+      "sha256": "e9fe8f778c9b7ee39a5bffeb272e047d8c25fc7056a40089c7a06c4622443e0b"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/17.png",
+      "bytes": 49164,
+      "sha256": "9b8705a8032e24842ad65234762468c6df28c6bf565b64ea1688ac3da6eff2a9"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water/timing.json",
+      "bytes": 5401,
+      "sha256": "aa6f5981996fa5bca0211931d0ec16f7fcefba5d758875d391803346cda1a08b"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/00.png",
+      "bytes": 48547,
+      "sha256": "515c82a1adba5a6037e55e478e0cc3f3a216db94c6536df001a97a837b901384"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/01.png",
+      "bytes": 39572,
+      "sha256": "dbad799592b09f989ab1328c027731b73f7a2095609c741d4bd669fe90db229a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/02.png",
+      "bytes": 44426,
+      "sha256": "05b1f6228b11f7a2b11b3d85616cbb482c1a180885731a7eaa4743bd954b969a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/03.png",
+      "bytes": 58080,
+      "sha256": "57ee06dc4dee001b567788bc5a352c13083a9ceeaa04d246fefe111b59949fce"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/04.png",
+      "bytes": 58858,
+      "sha256": "b96719187e397804fcb6e25573de2b0e7f78019c71a354914a7c798d61d1021f"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/05.png",
+      "bytes": 57375,
+      "sha256": "6ec6ac6bf88234d5f1990c84ea4e2ef8e11e2a2ea517eb08b0237b916c5e6bc9"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/06.png",
+      "bytes": 57388,
+      "sha256": "ad241518f4766f54dc0cb7ce3aa169c306bc2388aee8a663bdc9cd5762d21963"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/07.png",
+      "bytes": 57074,
+      "sha256": "c3c44ccf316d47f2f8a97ac04e9c203d727d2c7e3bdb94882e65c6a85e84e5a9"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/08.png",
+      "bytes": 57032,
+      "sha256": "3ac11599b7d6bfade34c30d762bef77bbc49ae623502cf101e9d66b37203da46"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/09.png",
+      "bytes": 49299,
+      "sha256": "8711f4f444257732eb72464c083e1a64217cd1b599412eeaea037448eca6f8e5"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/10.png",
+      "bytes": 49151,
+      "sha256": "3106f7d4f0da95107f373c5bb6b338fb7acb2f8b0295ce4ee3aee305a92f2c8a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/11.png",
+      "bytes": 50103,
+      "sha256": "d26c549238994f2da17074917f1130a556f0e05d2abd5e0e129356e0785cac6c"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/12.png",
+      "bytes": 32026,
+      "sha256": "0e80d639eae3c28e7efe1c8611c7f489619c939e96fc9ae99e803572bc018791"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/13.png",
+      "bytes": 32369,
+      "sha256": "221c8474af2d0b3abab12a3fdeda3ccbe82903d520639d5b2957b063d828a2ca"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/14.png",
+      "bytes": 33251,
+      "sha256": "751b4550b643b2d9ab86be9f2c9f4c9d31b1baa2bd5ac949d8d8c1a544ed0355"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/15.png",
+      "bytes": 32087,
+      "sha256": "9bbb2a5301d6a4973d0bfa15d4dae16e9ca80e3733a1330793d25d0ae608a093"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/16.png",
+      "bytes": 6747,
+      "sha256": "fcd5f98efe7eeb43ee9e3f3f16551bf3d1b874d9626a8472e317bb65699423f5"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/17.png",
+      "bytes": 5840,
+      "sha256": "e2c8ad0a9e4de1dab7483b495217e015f923bc128a42816bac248a50f0f35618"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/18.png",
+      "bytes": 6065,
+      "sha256": "5711ec6515176b8118a72e957c22dc0319132c60c76307878ed1512ab7fca99e"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap/19.png",
+      "bytes": 48908,
+      "sha256": "153fc23de347288a1c5fc5ab53b4c36e3fa9b6335c6d2d7c70e649cbb2b4d435"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/00.png",
+      "bytes": 48548,
+      "sha256": "fb0d14e4b300e18fcf1f5038faabdec2beac0afad9207952957e1a23c57c104c"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/01.png",
+      "bytes": 39543,
+      "sha256": "5ef7173dffdb9dab5d515caf3877d765fe8873df91705ac61315f462db71ea66"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/02.png",
+      "bytes": 44834,
+      "sha256": "ea2df81e6fafce892c68e615ee5f17719f50172d080e88c36fdc70fb5807f362"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/03.png",
+      "bytes": 58188,
+      "sha256": "215d9bf4074f9b0c39d882612a787fad55e3562d575dfa43907e3f7e3363b9a7"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/04.png",
+      "bytes": 58929,
+      "sha256": "623e6cf41e9924ed0ceedd7c85fad547cf7f46346dfb3edd725e73f01115bf82"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/05.png",
+      "bytes": 57478,
+      "sha256": "5740c1ad4f26a938ec65d0416aabc434dd96263564a502e1b691a93a035555b4"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/06.png",
+      "bytes": 57502,
+      "sha256": "da85390a28a86a713c9ce5bae1c0504511d589189f725665e6c4a08a5c81df80"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/07.png",
+      "bytes": 57216,
+      "sha256": "9fe75a58ff3ab01165610c95ef4b7e6914b25ea1b2461ed025d41b132dfd87c3"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/08.png",
+      "bytes": 57215,
+      "sha256": "335e8c421011645ebf69c081d27f9f068763dea245f39737bbe52b9422ade72d"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/09.png",
+      "bytes": 49199,
+      "sha256": "69e0cb40608c5121599a3343979fa19ae916dfae47c8ed746f62e93730c93412"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/10.png",
+      "bytes": 49397,
+      "sha256": "1adb1d4aa5b1ca082e8d61c4aca62b0406ccbe3323beb0f73cd3bb6b1b4e2642"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/11.png",
+      "bytes": 50133,
+      "sha256": "24e24d8b8313d3a7878d5ecc22abcebf54e2eba9ee6296301c826fbfff1f64c1"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/12.png",
+      "bytes": 32111,
+      "sha256": "d2000df5a7e0bb6aa694e40e38e2598f987caf87a7bd3d87901b3d6fdc60f510"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/13.png",
+      "bytes": 32367,
+      "sha256": "5cb3ec2fc059ab6b21ceb7603e2d26846c9fe828cbaa6ada64de8a9a0e83375a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/14.png",
+      "bytes": 33075,
+      "sha256": "814e4899cbd9bc9465f75a3b9ac742b067097aedb750fa3003fe874830cdb64d"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/15.png",
+      "bytes": 31904,
+      "sha256": "b412d8bcf6d187ff70719602c30313b8c52357984e095ef1c9f0baa17f0b92e9"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/16.png",
+      "bytes": 6710,
+      "sha256": "0cc7b2128f9a6bb51101c935181fa2906db4aaa7219f51f7ff9533142eef7003"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/17.png",
+      "bytes": 5854,
+      "sha256": "15ba4ddf80fc0bd37452cf5cf605fffa4dee361c7a695683ac2e74170e890592"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/18.png",
+      "bytes": 6154,
+      "sha256": "6d4178e082de298fda2eae63549b70c83ac899f84a0deaba84e1fbbf10085d0c"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_leap_left/19.png",
+      "bytes": 49110,
+      "sha256": "34d1181089ba290f27d60c2e44673d6f984daaa68ab02da103e6a876fac965d8"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/00.png",
+      "bytes": 49295,
+      "sha256": "cc2e818e995cc928b7688514c970be93997f29213c06abf44669173b1add9266"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/01.png",
+      "bytes": 49172,
+      "sha256": "ac2409164a1b33ba8047dd6400ca8f02782dc251175c708b8807f41bf8f1edb0"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/02.png",
+      "bytes": 49135,
+      "sha256": "ab777475028588ca5483b16d7b32bc9b99cad71d2ab53413ef946085be7db815"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/03.png",
+      "bytes": 49596,
+      "sha256": "0c914818135eca28ef528f8a606624eb4818caa3602cf12254d6c064af7505c1"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/04.png",
+      "bytes": 49236,
+      "sha256": "263ce2e73f47353892cb64f7521b8ba5b20a978f96cbb5ed03d2e7ca197cabc9"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/05.png",
+      "bytes": 49115,
+      "sha256": "9a80ac47c06e4fe5617df1097f3e8974885df4ace0789c59ed7de02c8cc757ae"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/06.png",
+      "bytes": 49341,
+      "sha256": "cfeddf3259a3c108f275e2db8e1c2e4e68f2431b498f628bfbe0379c5cfe95e1"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/07.png",
+      "bytes": 49679,
+      "sha256": "e4791e141e8f32987796d84ae4c2e4174fbe2bb039217d810b126f15e9af65a4"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/08.png",
+      "bytes": 50182,
+      "sha256": "5246047e7bab7e704d207dff2608145c3f58835389950a7be8944333d300d426"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/09.png",
+      "bytes": 49967,
+      "sha256": "b665ab8de2646b22115894abe74fadf1471d484e926a196e92edcd2cdc9ce865"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/10.png",
+      "bytes": 49995,
+      "sha256": "c1d0ae4f6f4f55a8c120381d8a8de42da4d14ca94507400a4be0542eefebda81"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/11.png",
+      "bytes": 50369,
+      "sha256": "4927c2e52732a6de31e47b768790d54e9698a26f26223f694906acaa3be72a0e"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/12.png",
+      "bytes": 50475,
+      "sha256": "525b924b771626f1d7585a6955fe3613726aa5aa78d133a7fe56e721195ea34b"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/13.png",
+      "bytes": 50437,
+      "sha256": "c0c21cbb8bc21f1c7c91ca59c8c24342646f45d5c9e46ab2e52ddf00d62f5d7a"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/14.png",
+      "bytes": 49797,
+      "sha256": "46019e6b349799f2daabfb81422a8bbe94c2585b595be866921911e95c121b2d"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/15.png",
+      "bytes": 49734,
+      "sha256": "279d1f8937f45835b2def24556f364284e13b4440faa89a730f0056085e0df59"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/16.png",
+      "bytes": 49897,
+      "sha256": "d173d237aa54e8cbabbeb110dc839f1c3805d26db54d082c7d155862672f7299"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_left/17.png",
+      "bytes": 49589,
+      "sha256": "63b4023235485f92fd42d49536567b31f6e94163af0461206d16b2fb80c623eb"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_turn_to_left/00.png",
+      "bytes": 43304,
+      "sha256": "a31bb1893f5956f7ec8177af18d71966b073344b2e023d55788d19addc7ff59b"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_turn_to_left/01.png",
+      "bytes": 45982,
+      "sha256": "910ace1eeab1faf18fdd36ef4c2655f360a430680dc04e28b1b230c8c818e49e"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_turn_to_right/00.png",
+      "bytes": 43536,
+      "sha256": "c40f35c18ed93c404da98328664a8ba0fe9c5128f7bf8c34111412801f9601b1"
+    },
+    {
+      "path": "app/assets/extra/ds_swim_water_turn_to_right/01.png",
+      "bytes": 45573,
+      "sha256": "89e2475a85302accb2a1e30a4b9cb330ba8ac64a7f0d2438e0f93bc9156596e6"
+    },
+    {
       "path": "app/assets/extra/ds_tail_allow/00.png",
       "bytes": 52738,
       "sha256": "d4a99e0e1cf517fadbf6c235914b14148e428cf823406c46edbcc846a3ab2e60"
@@ -780,8 +2085,8 @@
     },
     {
       "path": "app/companion_bubble.py",
-      "bytes": 2569,
-      "sha256": "ed9284123dfff3f65b02e0e2bae73e6088a7ac67d5679d1795a9db5c1372f605"
+      "bytes": 2526,
+      "sha256": "9598bae712a480dc2bf0a40e1cee88a6f3acc02a9ec334566f86e28af3ce17ba"
     },
     {
       "path": "app/companion_memory.py",
@@ -790,33 +2095,33 @@
     },
     {
       "path": "app/conversation_reactions.py",
-      "bytes": 3620,
-      "sha256": "6b78e5f2df22bf211ec082b055768d3ba9d0e66b16e1901167b7eb60c590ceb8"
+      "bytes": 4146,
+      "sha256": "209611ab174c37dc86dba881bb1aa8c77b184cbfa7269238aaaf1cce91ca19e9"
     },
     {
       "path": "app/dsh_companion.py",
-      "bytes": 51125,
-      "sha256": "8f2220e3a22866644a8a232b7798006837ca9e8fd868058de893024b757a6b8e"
+      "bytes": 60050,
+      "sha256": "657d07a1f045f3a5028880e229a7f6e0ed39bec63472b205131e2d9dcb0f16a1"
     },
     {
       "path": "app/dsh_plugin/companion-chat.mjs",
-      "bytes": 14894,
-      "sha256": "2b687404bf0cc6ac2e0597b72d8c1926729135412459b8bd4c08a7722e8cf301"
+      "bytes": 24023,
+      "sha256": "7b3e4e50b80d82b283eedbe82331f1656d22d324ba93e07f925f9507b22fa4bb"
     },
     {
       "path": "app/dsh_plugin/index.mjs",
-      "bytes": 10733,
-      "sha256": "1c947545d12321b298b80d631ae2f468313a2b750582931f089c50a58eed84b9"
+      "bytes": 12312,
+      "sha256": "1456d1e9a1755ca686f2446859fd9009a109d2ad4f91fcbf6559d278f23b81b1"
     },
     {
       "path": "app/dsh_plugin/persona.md",
-      "bytes": 2892,
-      "sha256": "aae69b27c4bd1bcefd3bfda2796d48ec80f1716211a9a03a94a78ae69bbbfa0a"
+      "bytes": 3958,
+      "sha256": "55127faf28b531c2460073c7f0ab2ca0f3cc0eec8f8089e8856f5f36d335c422"
     },
     {
       "path": "app/pet_support.py",
-      "bytes": 6184,
-      "sha256": "72e07f28723416bfa141afad253b058749c0370b84490f1f12e21af9114bbb74"
+      "bytes": 6725,
+      "sha256": "c4c7895a90891461c68ccabdfa66b87e8449226de47237e4ba000e5674f53422"
     },
     {
       "path": "app/requirements.txt",
@@ -834,14 +2139,19 @@
       "sha256": "7d5e0a822944f53fd81fe7db277da989fdc85ff38493d53c848808210882d44e"
     },
     {
+      "path": "app/swim_behavior.py",
+      "bytes": 4301,
+      "sha256": "27677a5d6c827b1a608a9c71f9d5635b50f35def85339ae1fbac268f469d9e44"
+    },
+    {
       "path": "app/tests/bridge.test.mjs",
-      "bytes": 3229,
-      "sha256": "7269831e383594ae6014d3c1b5fcc40b0f7dcdcffb87bb36995195d8a020224f"
+      "bytes": 4478,
+      "sha256": "e165007f9e2db6d9d964bfadd2fcf59a2cf0a9e1ff9cd2832406b1fb29e6e154"
     },
     {
       "path": "app/tests/companion-chat.test.mjs",
-      "bytes": 11210,
-      "sha256": "37b82ec936bb3d77f1360fdb470a075f94771dd9c17231d85fca9e9c3efef87f"
+      "bytes": 21547,
+      "sha256": "c581bf9ef1d7015668358c325b6708c4fa0cffd9498a0191712de4391bfa377a"
     },
     {
       "path": "app/tests/test_animation_policy.py",
@@ -850,8 +2160,13 @@
     },
     {
       "path": "app/tests/test_companion.py",
-      "bytes": 12869,
-      "sha256": "9f67389f16ab7f1775d7f55758f7f0d87b2c03de095399a2ad90bfb5cbc252a9"
+      "bytes": 25470,
+      "sha256": "761de7ff05c0f9305f2c88c98c89b5c2dcef86fc63efd40ae41597b46d5df5d5"
+    },
+    {
+      "path": "app/tests/test_food_swim.py",
+      "bytes": 11544,
+      "sha256": "96b3c76ee7555d1f8873f552a624323a5a5bdcf3d6b97a8eb4320396884d13ac"
     },
     {
       "path": "app/tests/test_tail_allow.py",
@@ -859,14 +2174,19 @@
       "sha256": "40d37d471cdd7e544b295a4609ca4699b1da790b6b8c9f1242e131f425d995a3"
     },
     {
+      "path": "app/tests/test_walk.py",
+      "bytes": 2686,
+      "sha256": "147aa86fe64319af3c609615258a47771af50e1a2515fe8b46814618e8934a16"
+    },
+    {
       "path": "app/whale_pet.py",
-      "bytes": 106616,
-      "sha256": "a0fd41cef4018708b178ad812529fec605c981751956be74c86614208e6ec639"
+      "bytes": 111566,
+      "sha256": "ee4369b1725f576498de7b483f9d199af5a6429d2d3bcca5703bd2e27ab221fb"
     },
     {
       "path": "docs/DSH使用说明.md",
-      "bytes": 1929,
-      "sha256": "c1bc7755f302defec31e0387e0670515094f630a44b6a1d471d3754832be1dae"
+      "bytes": 2332,
+      "sha256": "ab853c2aa9c18e4690ec40c9d5fe4301d401ab64636c8b8021139cc56deb80d9"
     },
     {
       "path": "docs/previews/tail-allow.png",
@@ -885,23 +2205,23 @@
     },
     {
       "path": "docs/动画状态说明.md",
-      "bytes": 8388,
-      "sha256": "d35fe0f45d3b6e2a1a33a3bd92965e9aad444e7bdc73ef2980b0a34800258fd5"
+      "bytes": 12002,
+      "sha256": "c98106962a2721591578c6cbca58a1bef90064f37da82658cee5e26dc1142647"
     },
     {
       "path": "docs/对话与记忆说明.md",
-      "bytes": 6666,
-      "sha256": "254516b4a28b2f82ce7968f3729f4023cf9ae330f6c9dc88f92a5cc0b6a0238a"
+      "bytes": 9445,
+      "sha256": "f3194e0aaae4ea64e9fd932068ddc83b29124ea13106a3dbab4dded666bcba1e"
     },
     {
       "path": "scripts/install_dsh_bridge.py",
-      "bytes": 1882,
-      "sha256": "f755cb8c02c74ee4ce9ee275a8e8c541b8d5e7fe090ac5660b0605f01a47c303"
+      "bytes": 2155,
+      "sha256": "87b3b90412c091911a69ac42ae0696891c62c0fd4eefda10f2857df8cf592fe9"
     },
     {
       "path": "scripts/package_github.py",
-      "bytes": 18790,
-      "sha256": "fd08ee6b44adcd6e2fdce8fd1d7994e14c3b6abfb5776ebc621c1071e1308850"
+      "bytes": 21505,
+      "sha256": "4270fc7276f8e5af0c91255366cb4e99c6afefbbf3fc385848ef928c510c0d1d"
     },
     {
       "path": "启动DSH桌宠.bat",
@@ -914,14 +2234,24 @@
       "sha256": "2ffe836addc1fce7a195d06091036bc33c71659238590dfa2f2543aeee578ab0"
     },
     {
+      "path": "启动桌面版DSH陪伴.bat",
+      "bytes": 104,
+      "sha256": "f0f03565af0cadfa3d85fb59e606975d6f7dcfde16e1afd912be5acd6220f1a2"
+    },
+    {
+      "path": "启动网页版DSH陪伴.bat",
+      "bytes": 100,
+      "sha256": "988042b919fbe122db57beb8aa7301c4b4c1aca1a64088bdbf1aaac0a978feb3"
+    },
+    {
       "path": "打开桌宠对话.bat",
       "bytes": 71,
       "sha256": "6588098e3676fd6cc77aed056b5f02546e96bb7ee8efcef11558bc96b8d7f3b8"
     },
     {
       "path": "接入本地DSH.bat",
-      "bytes": 569,
-      "sha256": "4a67337af6084b5e8a25eb311f07e5ffd7f6054e3558fd7393912da128145ea6"
+      "bytes": 635,
+      "sha256": "9fdec993c080e3ab33729117d4e4a468faa616d045ad0147f351c694112895aa"
     }
   ]
 }

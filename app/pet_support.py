@@ -125,11 +125,19 @@ class Preferences:
             return {}
         clean = {'scale': finite_number(data.get('scale'), 1.0, 0.5, 2.0),
                  'hunger': finite_number(data.get('hunger'), 1.0, 0.0, 1.0)}
-        for key in ('bubbles', 'quiet', 'walking', 'dsh_auto_follow'):
+        for key in ('bubbles', 'quiet', 'walking', 'swimming', 'dsh_auto_follow'):
             if isinstance(data.get(key), bool):
                 clean[key] = data[key]
         if data.get('pet_mode') in ('standalone', 'dsh'):
             clean['pet_mode'] = data['pet_mode']
+        if data.get('dsh_profile') in ('web', 'desktop'):
+            clean['dsh_profile'] = data['dsh_profile']
+        if isinstance(data.get('dsh_profile_sessions'), dict):
+            clean['dsh_profile_sessions'] = {key:value[:512] for key,value in data['dsh_profile_sessions'].items()
+                if key in ('web','desktop') and isinstance(value,str)}
+        for key in ('input_x', 'input_y'):
+            if type(data.get(key)) is int:
+                clean[key] = int(finite_number(data[key], 0, -1000000, 1000000))
         for key in ('dsh_home', 'dsh_project', 'dsh_session'):
             if isinstance(data.get(key), str):
                 clean[key] = data[key][:4096]

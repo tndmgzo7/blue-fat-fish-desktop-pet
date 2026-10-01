@@ -7,7 +7,7 @@ REPOSITORY=Path(__file__).resolve().parent.name=='scripts' and (BASE/'app/whale_
 ROOT=BASE if REPOSITORY else Path(__file__).resolve().parents[3]
 APP=ROOT/'app' if REPOSITORY else ROOT/'桌宠/whale-pet/app'
 TOOLS=ROOT/'scripts' if REPOSITORY else ROOT/'桌宠/whale-pet/tools'
-VERSION='2026.09.30'
+VERSION='2026.10.01'
 NAME='blue-fat-fish'
 # Leak check: reject any local absolute path instead of listing specific machines' paths.
 PERSONAL_PATH_PATTERNS=(
@@ -33,20 +33,21 @@ README=r'''# 蓝色大肥鱼桌宠 / Blue Fat Fish Desktop Pet
 Windows 安装 Python 3.11 或更新版本，并让 Python 可从命令行使用。解压完整目录后，双击 **启动桌宠.bat**；首次启动会自动创建环境并安装 PySide6，需要网络。
 
 - 单击摸头、双击开心；按住拖动，松开后落到屏幕底部。
+- 吃满后接揉肚子动画；日常可在屏幕内游泳，点击跃出水面后继续游，游一会儿回到地面。游泳角色与平时同尺寸，在原站位略上方游动；右键「动作」可选屏幕游泳，「自由游泳」开关控制自动出游；新素材保持 10 fps。
 - 点尾巴或右键「互动 → 摸尾巴」：先甩尾巴，再转身允许摸一下。等待约 4 秒，点她进入被摸分支；没有点击则进入超时分支。两个分支独立播放。
 - 右键可以投喂、玩耍、改大小、切换安静陪伴、隐藏和退出。重复启动会召回已有实例。
-- **打开桌宠对话.bat** 打开单行半透明输入框：回车发送，Alt + 拖动移动，右键设置，悬停查看反馈。
-- 蓝色大肥鱼的日常回复直接显示在可换行气泡里，性格自然、呆萌，偶尔有点小傲娇；自然语言任务提交给 dsh，技术细节留在工作会话。可用 `/任务 ` 直接下指令、`/聊 ` 只聊天。
+- **打开桌宠对话.bat** 打开单行半透明输入框：回车发送，空白处或两侧拖动移动，Alt + 拖动也可使用，右键设置，悬停查看反馈。
+- 蓝色大肥鱼的日常回复显示在她身旁的可换行气泡里，字体 17 像素。她是呆萌、贴心、有点贪吃的鲸鱼女仆，偶尔撒娇、轻轻嘴硬；闲聊顺着话题回应，不催派活或索要项目。明确任务提交给 dsh，技术细节留在工作会话。可用 `/任务 ` 直接下指令、`/聊 ` 只聊天。
 - 对话会触发相应表情和动作：被逗时脸红轻哼，被夸时害羞或得意，打招呼会挥手，也可以邀请摸头、摸尾巴、跳舞、喝茶。关键词命中直接反应；未命中时单独分类，与聊天回复并行。普通聊天保持默认动作，保护已有互动并限制重复播放。
 - 日常聊天复用 dsh 配置的模型连接，独立调用并关闭思考，不创建 Harness 任务；AI 聊天需 dsh 正在运行，动画和本地互动可离线。
 - `记住：称呼=主人` / `忘记：称呼` 管理明确保存的偏好，右键逐条查看或清除。详情见 [对话与记忆](docs/对话与记忆说明.md)。
-- 独立模式指令：喂饭、睡觉、醒醒、安静、活泼、隐藏、散步、写代码、摸尾巴、摸头、开心。
+- 独立模式指令：喂饭、睡觉、醒醒、安静、活泼、隐藏、散步、游泳、停止游泳、写代码、摸尾巴、摸头、开心。跟随 dsh 时在这些指令前加 `/` 可直接控制本地动作。
 
 macOS 可运行 `bash app/run_mac.command`；源码和素材通用，本次桌面与 dsh 联调在 Windows 验证。
 
 ## 连接 dsh
 
-先安装并运行一次 DeepSeek Harness 桌面版，双击 **接入本地DSH.bat**，再双击 **启动DSH桌宠.bat**。安装脚本从当前用户的 `.dsh` 或 `DSH_HOME` 找配置，备份后添加可移除的插件段。
+先安装并运行一次 DeepSeek Harness 网页版或桌面版，双击 **接入本地DSH.bat**，再双击对应的 **启动网页版DSH陪伴.bat** 或 **启动桌面版DSH陪伴.bat**。安装脚本从当前用户的 `.dsh` 或 `DSH_HOME` 找配置，备份后给已存在的两版配置添加可移除的插件段。右键「连接 dsh」可切换，各版本的连接和会话分开保存。
 
 输入框右键选择 / 新建会话、设置工作目录、排队或插入当前工作、停止工作。许可和工具问题在 dsh 窗口中处理。运行时才会生成个人设置和本机连接凭据，这些文件不在源码包内。
 
@@ -58,7 +59,7 @@ macOS 可运行 `bash app/run_mac.command`；源码和素材通用，本次桌�
 
 - **分工**：日常聊天由蓝色大肥鱼单独快速回答（关闭思考），任务执行交给 dsh；详细分析、代码和工具输出留在 dsh 的工作会话。
 - **本机保存**：聊天记忆保存在本机 `app/userdata/companion-memory.json`。近期聊天保留 7 天；长期记忆只在你明确输入 `记住：…` 时写入，可逐条忘记，也可清除近期聊天或长期记忆。个人记忆、会话、设置和运行时连接凭据不进入仓库和发布包。
-- **发送给模型的内容**：闲聊通过 dsh 已配置的模型服务发出，每次只包含人设、当次输入、最近 12 条聊天与少量旧摘录、相关长期记忆，以及按需读取的裁剪任务摘要（状态、进展、回复），总输入最多 16000 字符。不发送系统 / 开发者提示、推理内容、工具参数、完整工具结果、文件正文、模型配置或凭据；常见凭据格式会先被隐藏。表情分类请求只看当次输入。
+- **发送给模型的内容**：聊天经 dsh 发给当前所跟随会话选中的模型（会话没有单独选择时用 dsh 默认模型）。明确的日常闲聊只带人设、当次输入、最近最多 6 条聊天（合计 1800 字）与 400 字旧摘录，以及相关长期记忆；涉及任务或之前事情的输入才使用完整上下文：最近 12 条聊天、少量旧摘录、相关长期记忆和裁剪后的任务摘要（状态、进展、回复），总输入最多 16000 字符。不发送系统 / 开发者提示、推理内容、工具参数、完整工具结果、文件正文、模型配置或凭据；常见凭据格式会先被隐藏。表情分类请求只看当次输入。
 - 模型请求由你在 dsh 中配置的服务商处理，适用该服务商的数据政策；本项目不包含任何 API 密钥。详情见 [对话与记忆说明](docs/对话与记忆说明.md)。
 
 ## 开发与验证
@@ -81,7 +82,7 @@ py -3 -m venv .venv
 
 解压本包，把 `blue-fat-fish` 里面的文件作为仓库根目录上传，保留 `app/assets` 的全部文件。不要把外层 ZIP 当作源码目录；ZIP 可以放在 GitHub Release 供下载。
 
-仓库包含启动器、源码、完整三页图集、76 帧写代码动画、60 帧摸尾巴允许动画、测试与说明；不含 Python 环境、会话、个人设置、连接凭据、历史原始 ZIP 或临时验证文件。素材来源记录见 [ASSETS.md](ASSETS.md)。
+仓库包含启动器、源码、完整三页图集、76 帧写代码动画、60 帧摸尾巴允许动画、新增 257 帧吃饱与游泳素材、测试与说明；不含 Python 环境、会话、个人设置、连接凭据、历史原始 ZIP 或临时验证文件。素材来源记录见 [ASSETS.md](ASSETS.md)。
 
 ## 授权 / Credits
 
@@ -96,11 +97,11 @@ py -3 -m venv .venv
 '''
 DSH_GUIDE='''# 蓝色大肥鱼与 dsh
 
-安装并启动一次 DeepSeek Harness 桌面版后，运行根目录「接入本地DSH.bat」。默认读取 `%USERPROFILE%/.dsh`，自定义目录用 `DSH_HOME`。已验证 Desktop 0.2.0-rc.1 的 SessionController 接口。
+安装并启动一次 DeepSeek Harness 网页版或桌面版后，运行根目录「接入本地DSH.bat」。默认读取 `%USERPROFILE%/.dsh`，自定义目录用 `DSH_HOME`。分别启动对应的「启动网页版DSH陪伴.bat」或「启动桌面版DSH陪伴.bat」，也可右键「连接 dsh」切换。已实测本机 Web 与 Desktop 的 SessionController 接口。
 
-脚本向 `profiles/desktop/cordis.patch.yml` 添加 `whale-pet-bridge` 标记区域，保留其余配置并生成备份。移动本项目后重新运行接入脚本以更新插件地址。退出接入时只删除 begin / end 标记区域。CLI / Web 不会被此脚本自动修改。
+脚本向已存在的 `profiles/web/cordis.patch.yml` 和 `profiles/desktop/cordis.patch.yml` 添加 `whale-pet-bridge` 标记区域，保留其余配置并生成备份。两版使用独立连接文件和会话选择。移动本项目后重新运行接入脚本以更新插件地址。退出接入时只删除对应配置的 begin / end 标记区域。运行中的网页版通常会自动加载，桌面版重开后加载。
 
-双击「启动DSH桌宠.bat」。单行输入框按回车发送，Alt + 拖动移动，右键选择 / 新建会话、设置工作目录、切换独立模式、停止工作。默认只跟随当前工作目录中正在工作的会话；手动选会话或提交指令后关闭自动跟随，右键可以重新开启。新任务挂到 dsh 对应工作区，用「蓝色大肥鱼 · …」命名。
+双击「启动DSH桌宠.bat」沿用上次选择。单行输入框按回车发送，空白处或两侧直接拖动；有文字时保留选字，也可按住 Alt 拖动。位置会保存。右键选择 / 新建会话、设置工作目录、切换独立模式、停止工作。默认只跟随当前工作目录中正在工作的会话；手动选会话或提交指令后关闭自动跟随，右键可以重新开启。新任务挂到所选版本的 dsh 对应工作区，用「蓝色大肥鱼 · …」命名。
 
 日常聊天由蓝色大肥鱼单独快速回答，显示在可换行气泡中，不进入 dsh 的工作对话。明确的任务指令仍交给 dsh；`/任务 ` 可直接提交，`/聊 ` 只聊天。三个专用只读工具负责裁剪任务摘要，不传入完整 Harness。模型和连接由 dsh 提供，所以 AI 闲聊需要 dsh 正在运行；独立动画和互动可离线。
 
@@ -150,6 +151,16 @@ ATTRIBUTES='''* text=auto
 '''
 CHANGELOG='''# 更新记录
 
+## 2026.10.01
+
+- 吃满后播放吃饱揉肚子动画，结束恢复待机；新增游泳、转向、点击跃出水面，共 257 张原始透明帧，保持原始 10 fps。
+- 游泳统一为与站姿相近的显示尺寸，在原站位略上方游动；只提供一种游泳动作，游一会儿回到地面。
+- 回复气泡跟随可见角色，字体增大到 17 像素；输入框支持拖动。
+- 接入网页版和桌面版 dsh，分别保存连接与所选会话，聊天跟随当前会话的模型。
+- 聊天只读取所选会话的一次模型快照，减少全会话遍历延迟，支持流式气泡；闲聊关闭思考。
+- 定时核对真实任务进度；思考动画每次只播放一遍，随后恢复普通轮播。散步限时结束并接摔倒收尾。
+- 性格改为呆萌、贴心、贪吃的鲸鱼女仆，日常陪伴为主，只有明确任务或进度问题才谈工作。
+
 ## 2026.09.30
 
 - 角色名称统一为蓝色大肥鱼，单行半透明无边框指令框。
@@ -171,6 +182,7 @@ ASSETS='''# 素材来源与运行方式
 - `app/assets/atlas.json` 与三页 `atlas*.png`：原有 1224 帧，包含镜像别名。
 - `app/assets/extra/ds_code_eureka`：`whale-pet-frames-code-eureka.zip` 中的无主气泡版本，76 帧。
 - `app/assets/extra/ds_tail_allow`：`whale-pet-frames-tail-allow.zip` 中的无文字版本，60 帧；`source.json` 记录原始 ZIP 和各 PNG 的 SHA-256。
+- `app/assets/extra/additions.json`：吃饱揉肚子及游泳，共 257 张原始透明 PNG（小尺寸帧仅存档）；完整尺寸的左右向由 swim-full 两个素材卷合并，保留 10 fps、转向、点击跃出和逐帧 SHA-256。
 - 对话气泡由程序实时绘制，可关闭。摸尾巴的确认和超时片段独立，不会串播。
 - `docs/previews/tail-allow.png`：应用实际渲染的分支预览。
 
@@ -194,7 +206,7 @@ def main():
             text=data.decode('utf-8-sig').replace('\r\n','\n').replace('\r','\n')
             data=(text.replace('\n','\r\n') if source.suffix=='.bat' else text).encode('utf-8')
         add(destination,data)
-    for name in ('whale_pet.py','pet_support.py','dsh_companion.py','companion_memory.py','companion_bubble.py','conversation_reactions.py','animation_policy.py','requirements.txt','run_windows.bat','run_mac.command'):
+    for name in ('whale_pet.py','pet_support.py','dsh_companion.py','companion_memory.py','companion_bubble.py','conversation_reactions.py','animation_policy.py','swim_behavior.py','requirements.txt','run_windows.bat','run_mac.command'):
         copy(APP/name,'app/'+name)
     for path in sorted((APP/'assets').rglob('*')):
         if path.is_file() and path.suffix in ('.png','.json','.ico','.icns'):
@@ -205,7 +217,7 @@ def main():
     copy(TOOLS/'install_dsh_bridge.py','scripts/install_dsh_bridge.py')
     copy(Path(__file__),'scripts/package_github.py')
     test_folder=APP/'tests'
-    for name in ('test_tail_allow.py','test_animation_policy.py','test_companion.py','bridge.test.mjs','companion-chat.test.mjs'):
+    for name in ('test_tail_allow.py','test_animation_policy.py','test_companion.py','test_walk.py','test_food_swim.py','bridge.test.mjs','companion-chat.test.mjs'):
         candidate=test_folder/name
         if not candidate.exists(): candidate=APP/'_validation'/name
         copy(candidate,'app/tests/'+name)
@@ -224,7 +236,8 @@ def main():
     else: add('README.md',README.encode('utf-8'))
     for name,text in {'docs/DSH使用说明.md':DSH_GUIDE,'.gitignore':GITIGNORE,'.gitattributes':ATTRIBUTES,
                       'CHANGELOG.md':CHANGELOG,'ASSETS.md':ASSETS,'VERSION':VERSION+'\n'}.items(): add(name,text.encode('utf-8'))
-    launchers={'启动桌宠.bat':'--mode standalone','启动DSH桌宠.bat':'--mode dsh --chat','打开桌宠对话.bat':'--chat'}
+    launchers={'启动桌宠.bat':'--mode standalone','启动DSH桌宠.bat':'--mode dsh --chat','打开桌宠对话.bat':'--chat',
+        '启动网页版DSH陪伴.bat':'--mode dsh --dsh-profile web --chat','启动桌面版DSH陪伴.bat':'--mode dsh --dsh-profile desktop --chat'}
     for name,arguments in launchers.items():
         text='@echo off\r\nchcp 65001 >nul\r\ncall "%~dp0app\\run_windows.bat" '+arguments+' %*\r\n'
         add(name,text.encode('utf-8'))

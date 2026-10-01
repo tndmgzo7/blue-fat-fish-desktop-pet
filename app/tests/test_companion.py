@@ -6,13 +6,17 @@ import tempfile
 import unittest
 import json
 import time
+from types import SimpleNamespace
 APP=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(APP))
 from companion_memory import CompanionMemory
 from PySide6.QtWidgets import QApplication, QLineEdit
 from whale_pet import Sprites, Pet
 from dsh_companion import PetCompanion
-from conversation_reactions import keyword_reaction, REACTIONS
+from pet_support import Preferences
+from PySide6.QtCore import QPoint, QPointF, QRect, Qt, QEvent
+from PySide6.QtGui import QMouseEvent
+from conversation_reactions import keyword_reaction, REACTIONS, is_neutral_chat
 app=QApplication.instance() or QApplication([])
 sprites=Sprites(str(APP/'assets'))
 
@@ -63,6 +67,141 @@ class CompanionTests(unittest.TestCase):
     def last_call(self, route):
         return next(call for call in reversed(self.calls) if call[0] == route)
 
+    def test_profile_switch_isolates_sessions_and_discards_old_chat(self):
+        self.comp.send('你好'); stale=self.last_call('/chat')[2]
+        self.comp.set_dsh_profile('web')
+        self.assertEqual(self.comp.client.profile,'web'); self.assertFalse(self.comp.connected)
+        self.assertEqual(self.comp.profile_sessions['desktop'],'real'); self.assertEqual(self.comp.session_id,'')
+        stale({'reply':'OLD-PROFILE-REPLY','action':'task'})
+        self.assertNotIn('OLD-PROFILE',self.comp.last_persona_reply)
+        self.comp.session_id='web-only'
+        self.comp.set_dsh_profile('desktop'); self.assertEqual(self.comp.session_id,'real')
+        self.comp.set_dsh_profile('web'); self.assertEqual(self.comp.session_id,'web-only')
+        preferences=Preferences(str(Path(self.temp.name)/'prefs.json'))
+        preferences.save(self.comp.preferences()); saved=preferences.load()
+        self.assertEqual(saved['dsh_profile'],'web'); self.assertEqual(saved['dsh_profile_sessions']['desktop'],'real')
+
+    def test_authoritative_status_stops_stale_thinking_without_replaying_history(self):
+        self.comp.set_activity('thinking'); self.comp.activity.cursor=10
+        self.comp.task_status_received({'sessionId':'real','cursor':10,'running':False,'state':'idle',
+            'outcome':'unknown','pendingCalls':[],'approvalIds':[],'questionIds':[]})
+        self.assertFalse(self.comp.busy);self.assertEqual(self.pet.state,'idle')
+        self.comp.task_status_received({'sessionId':'real','cursor':12,'running':False,'state':'success',
+            'pendingCalls':[],'approvalIds':[],'questionIds':[]})
+        self.assertEqual(self.pet.state,'idle');self.assertIsNone(self.comp.pending_outcome)
+        self.comp.set_activity('coding');self.comp.activity.cursor=20
+        self.comp.task_status_received({'sessionId':'real','cursor':19,'running':False,'state':'idle'})
+        self.assertTrue(self.comp.busy);self.assertEqual(self.comp.activity.state,'coding')
+        self.comp.task_status_received({'sessionId':'other','cursor':30,'running':False,'state':'idle'})
+        self.assertTrue(self.comp.busy)
+
+    def test_snapshot_stream_baseline_and_poll_preserve_current_reply(self):
+        self.comp.frame_received({'type':'snapshot','cursor':11,'records':[{'type':'event','event':{'seq':11,'type':'step/start','data':{}}}],
+            'assistantStream':{'activeAttempt':{'stream':[{'time':1,'chunk':{'type':'text-delta','text':'PRIVATE'}}]}}})
+        self.assertEqual(self.comp.activity.state,'replying')
+        self.comp.last_stream_at=time.monotonic()
+        self.comp.task_status_received({'sessionId':'real','cursor':11,'running':True,'state':'thinking',
+            'pendingCalls':[],'approvalIds':[],'questionIds':[]})
+        self.assertEqual(self.comp.activity.state,'replying')
+        self.comp.task_status_received({'sessionId':'real','cursor':12,'running':True,'state':'coding',
+            'pendingCalls':[{'id':'edit','name':'write','state':'coding'}],'approvalIds':[],'questionIds':[]})
+        self.assertEqual(self.comp.activity.state,'coding');self.assertIn('edit',self.comp.activity.pending_tools)
+
+    def test_thinking_plays_once_then_waits_for_real_progress(self):
+        self.comp.set_activity('thinking')
+        self.assertFalse(self.pet.anim.loop)
+        duration=len(self.pet.anim)/self.pet.anim.fps
+        self.assertEqual(self.pet.anim.fps,sprites['dsh_thinking'].fps)
+        self.pet.t=self.pet.state_t=duration-.01
+        self.pet.last_ms=self.pet.clock.elapsed()-20;self.pet._tick()
+        self.assertEqual(self.pet.state,'idle')
+        self.assertTrue(self.comp.busy);self.assertEqual(self.comp.activity.state,'thinking')
+        self.pet.next_behaviour=self.pet.next_walk=self.pet.next_attention=1e9
+        self.pet._auto_ds=False
+        for _ in range(5):
+            self.comp.frame_received({'type':'assistant-stream','frame':{'type':'chunk','chunk':{'type':'reasoning-delta','text':'still thinking'}}})
+            self.comp.clip_deadline=0;self.comp.animation_tick();self.pet._tick()
+            self.assertEqual(self.pet.state,'idle')
+        self.comp.task_status_received({'sessionId':'real','cursor':44,'running':True,'state':'thinking',
+            'pendingCalls':[],'approvalIds':[],'questionIds':[]})
+        self.assertEqual(self.pet.state,'idle')
+        self.comp.set_activity('coding');self.assertEqual(self.pet.anim.name,'dsh_typing')
+        self.comp.set_activity('thinking');self.assertFalse(self.pet.anim.loop)
+        self.assertEqual(self.pet.t,0)
+
+    def test_normal_idle_actions_resume_after_single_thinking_clip(self):
+        self.comp.set_activity('thinking')
+        self.pet.t=self.pet.state_t=len(self.pet.anim)/self.pet.anim.fps
+        self.pet._tick();self.assertEqual(self.pet.state,'idle')
+        self.pet._auto_ds=False;self.pet._force_behaviour='wave'
+        self.pet.next_attention=self.pet.next_walk=1e9
+        self.pet.next_behaviour=-1;self.pet.t=0
+        self.pet._tick();self.assertEqual(self.pet.state,'wave')
+        self.comp.set_activity('thinking');self.comp.animation_tick()
+        self.assertEqual(self.pet.state,'wave')
+        self.assertTrue(self.comp.busy)
+        self.comp.set_activity('coding');self.assertEqual(self.pet.anim.name,'dsh_typing')
+
+    def test_manual_interruption_does_not_repeat_the_same_thinking_clip(self):
+        self.comp.set_activity('thinking')
+        self.pet.interact('rice');self.comp.set_activity('thinking')
+        self.assertEqual(self.pet.state,'ds_rice_slurp')
+        self.pet.set_state('idle');self.comp.animation_tick()
+        self.assertEqual(self.pet.state,'idle')
+        self.comp.set_activity('success');self.assertIsNotNone(self.comp.outcome_animation)
+
+    def test_work_updates_preserve_complete_walk_and_fall_sequence(self):
+        self.pet._auto_ds=False;self.pet.animation_origin='automatic'
+        self.pet._start_walk()
+        self.comp.set_activity('coding');self.assertEqual(self.pet.state,'walk')
+        ms=0;self.pet.last_ms=0;self.pet.clock=SimpleNamespace(elapsed=lambda:ms)
+        for _ in range(150):
+            if self.pet.state=='trip':break
+            ms+=50;self.pet._tick();self.comp.animation_tick()
+        self.assertEqual(self.pet.state,'trip')
+        for _ in range(100):
+            if self.pet.state=='idle':break
+            ms+=50;self.pet._tick()
+            if self.pet.state=='trip':self.comp.animation_tick()
+        self.assertEqual(self.pet.state,'idle')
+        self.comp.animation_tick();self.assertEqual(self.pet.anim.name,'dsh_typing')
+
+    def test_profile_credentials_do_not_fall_back_to_other_host(self):
+        directory=Path(self.temp.name)
+        record={'url':'http://127.0.0.1:12345','token':'a'*64}
+        (directory/'dsh-bridge.json').write_text(json.dumps(record))
+        self.comp.client._credentials(); self.assertEqual(self.comp.client.token,'a'*64)
+        self.comp.client.set_profile('web')
+        with self.assertRaises(OSError): self.comp.client._credentials()
+        record.update(profile='web',token='b'*64)
+        (directory/'dsh-bridge-web.json').write_text(json.dumps(record))
+        self.comp.client._credentials(); self.assertEqual(self.comp.client.token,'b'*64)
+        record['profile']='desktop'; (directory/'dsh-bridge-web.json').write_text(json.dumps(record))
+        with self.assertRaises(ValueError): self.comp.client._credentials()
+
+    def test_empty_input_drag_and_text_selection_and_position_save(self):
+        window=self.comp.window; widget=window.input
+        window.move(200,200); app.processEvents()
+        local=QPoint(80,18); before=window.pos(); global_pos=widget.mapToGlobal(local)
+        def event(kind,position,global_point,button,buttons):
+            QApplication.sendEvent(widget,QMouseEvent(kind,QPointF(position),QPointF(global_point),button,buttons,Qt.NoModifier))
+        event(QEvent.MouseButtonPress,local,global_pos,Qt.LeftButton,Qt.LeftButton)
+        delta=QPoint(65,35)
+        event(QEvent.MouseMove,local+delta,global_pos+delta,Qt.NoButton,Qt.LeftButton)
+        event(QEvent.MouseButtonRelease,local+delta,global_pos+delta,Qt.LeftButton,Qt.NoButton)
+        self.assertEqual(window.pos(),before+delta)
+        self.assertEqual(self.comp.preferences()['input_x'],window.x())
+        widget.setText('保留输入和选字'); before=window.pos(); global_pos=widget.mapToGlobal(local)
+        event(QEvent.MouseButtonPress,local,global_pos,Qt.LeftButton,Qt.LeftButton)
+        self.assertIsNone(widget.drag_offset)
+        event(QEvent.MouseButtonRelease,local,global_pos,Qt.LeftButton,Qt.NoButton)
+        self.assertEqual(window.pos(),before); self.assertEqual(widget.text(),'保留输入和选字')
+        edge=QPoint(4,18); global_pos=widget.mapToGlobal(edge)
+        event(QEvent.MouseButtonPress,edge,global_pos,Qt.LeftButton,Qt.LeftButton)
+        event(QEvent.MouseMove,edge+delta,global_pos+delta,Qt.NoButton,Qt.LeftButton)
+        event(QEvent.MouseButtonRelease,edge+delta,global_pos+delta,Qt.LeftButton,Qt.NoButton)
+        self.assertEqual(window.pos(),before+delta); self.assertEqual(widget.text(),'保留输入和选字')
+
     def test_one_input_persona_reply_visible_raw_task_output_stays_in_dsh(self):
         self.assertEqual(len([w for w in self.comp.window.findChildren(QLineEdit) if w.isVisible()]),1)
         self.comp.window.input.setText('今天开心吗'); self.comp.send('今天开心吗')
@@ -73,6 +212,28 @@ class CompanionTests(unittest.TestCase):
         self.comp.display_event({'type':'assistant/message','data':{'content':[{'type':'text','text':'RAW-TECHNICAL-OUTPUT'}]}})
         self.assertNotIn('RAW-TECHNICAL',self.comp.reply_bubble.label.text())
         self.assertNotIn('RAW-TECHNICAL',self.comp.window.input.toolTip())
+
+    def test_reply_follows_pet_and_ignores_input_position_with_screen_clamping(self):
+        area=QRect(0,0,1400,1000)
+        self.pet._screen_rect=lambda:area
+        self.pet.move(600,600);self.comp.window.move(100,100)
+        self.comp.send('你好');self.last_call('/chat')[2]({'reply':'主人，我在这里哦。','action':'chat'})
+        bubble=self.comp.reply_bubble
+        self.assertTrue(bubble.isVisible())
+        self.assertLessEqual(abs(bubble.geometry().center().x()-self.pet.geometry().center().x()),1)
+        self.assertEqual(bubble.geometry().bottom()+9,self.pet.y())
+        before=bubble.pos()
+        self.comp.window.move(50,800);bubble.tick()
+        self.assertEqual(bubble.pos(),before)
+        self.comp.window.hide();bubble.tick()
+        self.assertEqual(bubble.pos(),before)
+        self.pet.move(self.pet.pos()+QPoint(60,-80));bubble.tick()
+        self.assertEqual(bubble.pos(),before+QPoint(60,-80))
+        self.pet.move(0,0);bubble.tick()
+        self.assertTrue(area.contains(bubble.geometry()))
+        self.assertGreaterEqual(bubble.y(),self.pet.geometry().bottom()+8)
+        self.pet.move(area.right()-self.pet.width()+1,600);bubble.tick()
+        self.assertTrue(area.contains(bubble.geometry()))
 
     def test_task_routes_original_instruction_and_pins_session(self):
         self.comp.window.input.setText('修复显示问题'); self.comp.send('修复显示问题')
@@ -182,7 +343,8 @@ class CompanionTests(unittest.TestCase):
     def test_reply_does_not_wait_for_emotion_and_keyword_skips_classifier(self):
         self.comp.send('我们聊点日常吧')
         self.assertEqual([c[0] for c in self.calls],['/chat','/emotion'])
-        self.assertEqual(set(self.last_call('/emotion')[1]),{'text','turnId'})
+        self.assertEqual(set(self.last_call('/emotion')[1]),{'text','turnId','sessionId'})
+        self.assertEqual(self.last_call('/emotion')[1]['sessionId'],'real')
         stale=self.last_call('/emotion')[2]
         self.last_call('/chat')[2]({'reply':'好呀，今天过得怎么样？','action':'chat'})
         self.assertFalse(self.comp.chatting); self.assertTrue(self.comp.reply_bubble.isVisible())
@@ -192,13 +354,38 @@ class CompanionTests(unittest.TestCase):
         self.assertEqual(self.pet.state,'wave')
         stale({'emotion':'cry'}); self.assertEqual(self.pet.state,'wave')
 
+    def test_stream_preview_shows_prose_without_completing_or_dispatching_and_stale_turns_are_ignored(self):
+        self.comp.send('你好呀')
+        _,body,done,_=self.last_call('/chat')
+        self.assertTrue(body['stream'])
+        self.comp.client.chat_partial.emit({'turnId':body['turnId'],'reply':'主人，你好'})
+        self.assertTrue(self.comp.reply_bubble.isVisible());self.assertTrue(self.comp.chatting)
+        self.assertEqual(self.comp.last_persona_reply,'主人，你好')
+        self.assertFalse(self.comp.memory.data['recent']);self.assertFalse(any(call[0]=='/prompt' for call in self.calls))
+        done({'reply':'主人，你好呀。','action':'chat'})
+        self.assertFalse(self.comp.chatting);self.assertEqual(len(self.comp.memory.data['recent']),2)
+        self.comp.send('聊聊今天吧');self.comp.select('other')
+        self.comp.client.chat_partial.emit({'turnId':body['turnId'],'reply':'STALE-PREVIEW'})
+        self.assertNotIn('STALE',self.comp.last_persona_reply)
+
     def test_neutral_or_failed_classifier_keeps_default_and_reply_succeeds(self):
         for failure in (False, True):
-            self.comp.send('今天星期几')
+            self.comp.send('我们聊些什么呢')
             request=self.last_call('/emotion')
             request[3]('slow classifier') if failure else request[2]({'emotion':'none'})
             self.last_call('/chat')[2]({'reply':'今天是星期三。','action':'chat'})
             self.assertEqual(self.pet.state,'idle')
             self.assertEqual(self.comp.last_persona_reply,'今天是星期三。')
+
+    def test_exact_neutral_questions_skip_classifier_without_swallowing_emotions_or_work(self):
+        for text in ('你是谁？', '/聊 你叫什么名字', '今天是星期几', '现在几点？', '今天想吃什么？用一句话回答。'):
+            with self.subTest(text=text): self.assertTrue(is_neutral_chat(text))
+        for text in ('好难过，你是谁？', '你是谁啊，我好奇', '帮我看看今天吃什么', '修改文件，现在几点', '今天有件特别的事想告诉你'):
+            with self.subTest(text=text): self.assertFalse(is_neutral_chat(text))
+        self.comp.send('今天想吃什么？用一句话回答。')
+        self.assertEqual([c[0] for c in self.calls], ['/chat'])
+        self.last_call('/chat')[2]({'reply':'想吃小饼干。','action':'chat'})
+        self.assertEqual(self.pet.state,'idle')
+        self.assertEqual(self.comp.last_persona_reply,'想吃小饼干。')
 
 if __name__=='__main__': unittest.main()
